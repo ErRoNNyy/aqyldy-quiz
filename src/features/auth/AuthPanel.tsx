@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
@@ -16,7 +17,12 @@ import { isSupabaseConfigured } from "@/src/services/supabase/client";
 type Mode = "signin" | "signup";
 
 export function AuthPanel() {
-  const [mode, setMode] = useState<Mode>("signin");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryMode = searchParams.get("mode");
+  const nextPath = searchParams.get("next");
+
+  const [mode, setMode] = useState<Mode>(queryMode === "signup" ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -31,7 +37,9 @@ export function AuthPanel() {
 
   async function handleSubmit() {
     if (!isSupabaseConfigured) {
-      setMessage("Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY first.");
+      setMessage(
+        "Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY) first.",
+      );
       return;
     }
     setLoading(true);
@@ -47,6 +55,7 @@ export function AuthPanel() {
           await ensureProfile(user, username.trim());
         }
         setMessage("Sign-up complete. Verify your email if confirmation is enabled.");
+        setMode("signin");
       } else {
         const { error } = await signIn(email, password);
         if (error) {
@@ -56,7 +65,7 @@ export function AuthPanel() {
         if (user && username.trim()) {
           await ensureProfile(user, username.trim());
         }
-        setMessage("Signed in. You can now open Dashboard or Host.");
+        router.push(nextPath || "/dashboard");
       }
     } catch (error) {
       setMessage((error as Error).message);

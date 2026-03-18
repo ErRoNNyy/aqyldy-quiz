@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
 import {
@@ -18,6 +19,7 @@ import { isSupabaseConfigured } from "@/src/services/supabase/client";
 import type { Question, Quiz, Session } from "@/src/types/models";
 
 export function HostPanel() {
+  const router = useRouter();
   const [hostId, setHostId] = useState<string | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuizId, setSelectedQuizId] = useState("");
@@ -52,7 +54,7 @@ export function HostPanel() {
       try {
         const user = await getCurrentUser();
         if (!user) {
-          setStatus("Please sign in first to host sessions.");
+          router.replace("/signin?next=/host");
           return;
         }
         setHostId(user.id);
@@ -68,7 +70,7 @@ export function HostPanel() {
       }
     }
     void init();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!selectedQuizId) {

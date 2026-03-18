@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Button } from "@/src/components/ui/Button";
@@ -18,6 +19,7 @@ import { useSessionStore } from "@/src/store/sessionStore";
 import type { Answer, Question, Session } from "@/src/types/models";
 
 export function PlayPanel() {
+  const router = useRouter();
   const params = useSearchParams();
   const sessionId = params.get("session");
   const participantId = params.get("participant");
@@ -55,8 +57,8 @@ export function PlayPanel() {
 
   useEffect(() => {
     async function init() {
-      if (!sessionId) {
-        setStatus("Session id is missing.");
+      if (!sessionId || !participantId) {
+        router.replace("/join");
         return;
       }
       try {
@@ -70,7 +72,7 @@ export function PlayPanel() {
       }
     }
     void init();
-  }, [loadQuestion, sessionId, setLeaderboard]);
+  }, [loadQuestion, participantId, router, sessionId, setLeaderboard]);
 
   useSessionRealtime({
     sessionId,

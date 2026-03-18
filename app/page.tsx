@@ -2,31 +2,33 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-zinc-100 p-6">
-      <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-8">
-        <h1 className="text-3xl font-bold">Kahoot KZ (Next.js + Supabase)</h1>
-        <p className="text-sm text-zinc-700">
-          Kahoot-like app implementation with quiz creation, drag-drop image upload,
-          live sessions, and realtime leaderboard.
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Link className="rounded-lg border p-3 hover:bg-zinc-50" href="/auth">
-            <p className="font-semibold">Authentication</p>
-            <p className="text-sm text-zinc-600">Sign in/sign up or save guest nickname</p>
+    <div className="min-h-screen bg-cyan-500">
+      <header className="flex items-center justify-between bg-orange-500 px-11 py-2">
+        <Link href="/" className="text-sm font-semibold text-white">
+          Aqyldy quiz
+        </Link>
+        <Link
+          href="/signin"
+          className="rounded-md bg-cyan-500 px-5 py-1.5 text-xs font-semibold text-white transition hover:bg-cyan-600"
+        >
+          Sign in
+        </Link>
+      </header>
+
+      <main className="mx-auto flex min-h-[calc(100vh-44px)] max-w-3xl flex-col items-center justify-center px-6">
+        <h1 className="mb-16 text-center text-4xl font-bold text-white">Welcome to Aqyldy quiz!</h1>
+        <div className="flex w-full max-w-sm flex-col gap-6">
+          <Link
+            href="/join"
+            className="rounded-md bg-orange-500 px-8 py-5 text-center text-3xl font-semibold text-white transition hover:bg-orange-600"
+          >
+            JOIN QUIZ
           </Link>
-          <Link className="rounded-lg border p-3 hover:bg-zinc-50" href="/dashboard">
-            <p className="font-semibold">Quiz Dashboard</p>
-            <p className="text-sm text-zinc-600">
-              Create quizzes/questions and upload question images
-            </p>
-          </Link>
-          <Link className="rounded-lg border p-3 hover:bg-zinc-50" href="/host">
-            <p className="font-semibold">Host</p>
-            <p className="text-sm text-zinc-600">Start session, update current question, end</p>
-          </Link>
-          <Link className="rounded-lg border p-3 hover:bg-zinc-50" href="/join">
-            <p className="font-semibold">Join / Play</p>
-            <p className="text-sm text-zinc-600">Join by code and answer in realtime</p>
+          <Link
+            href="/signup"
+            className="self-center rounded-md bg-orange-500 px-10 py-2.5 text-2xl font-semibold text-white transition hover:bg-orange-600"
+          >
+            Sign up for FREE
           </Link>
         </div>
       </main>

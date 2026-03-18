@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/src/components/ui/Button";
 import { Card } from "@/src/components/ui/Card";
@@ -24,6 +25,7 @@ interface QuestionDraftAnswer {
 }
 
 export function QuizBuilder() {
+  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuizId, setSelectedQuizId] = useState<string>("");
@@ -94,7 +96,7 @@ export function QuizBuilder() {
       try {
         const user = await getCurrentUser();
         if (!user) {
-          setStatus("Please sign in first.");
+          router.replace("/signin?next=/dashboard");
           return;
         }
         setUserId(user.id);
@@ -104,7 +106,7 @@ export function QuizBuilder() {
       }
     }
     void init();
-  }, [loadQuizzes]);
+  }, [loadQuizzes, router]);
 
   useEffect(() => {
     if (!selectedQuizId) {

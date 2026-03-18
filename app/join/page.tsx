@@ -12,7 +12,7 @@ const JoinPanel = dynamic(
 
 export default function JoinPage() {
   return (
-    <main className="min-h-screen bg-zinc-100 p-6">
+    <main>
       <JoinPanel />
     </main>
   );
