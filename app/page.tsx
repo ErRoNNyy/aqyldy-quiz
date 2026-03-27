@@ -1,6 +1,33 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getCurrentUser } from "@/src/services/supabase/api";
+import { isSupabaseConfigured } from "@/src/services/supabase/client";
 
 export default function Home() {
+  const router = useRouter();
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    async function check() {
+      if (isSupabaseConfigured) {
+        const user = await getCurrentUser();
+        if (user) {
+          router.replace("/home");
+          return;
+        }
+      }
+      setChecked(true);
+    }
+    void check();
+  }, [router]);
+
+  if (!checked) {
+    return <div className="min-h-screen bg-cyan-500" />;
+  }
+
   return (
     <div className="min-h-screen bg-cyan-500">
       <header className="flex items-center justify-between bg-orange-500 px-11 py-2">

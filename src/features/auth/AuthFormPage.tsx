@@ -59,13 +59,8 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
           throw error;
         }
 
-        const user = await getCurrentUser();
-        if (user) {
-          await ensureProfile(user, getDefaultUsername(email));
-        }
-
-        setMessage("Account created. You can now sign in.");
-        router.push("/signin");
+        setMessage("Account created! Check your email to confirm, then sign in.");
+        setTimeout(() => router.push("/signin"), 2000);
         return;
       }
 
@@ -74,7 +69,12 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
         throw error;
       }
 
-      router.push(nextPath || "/dashboard");
+      const user = await getCurrentUser();
+      if (user) {
+        await ensureProfile(user, getDefaultUsername(email));
+      }
+
+      router.push(nextPath || "/home");
     } catch (error) {
       setMessage((error as Error).message);
     } finally {

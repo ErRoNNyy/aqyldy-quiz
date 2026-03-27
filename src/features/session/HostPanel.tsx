@@ -7,6 +7,7 @@ import { Card } from "@/src/components/ui/Card";
 import {
   completeSession,
   createSession,
+  ensureProfile,
   getCurrentUser,
   getLeaderboard,
   getMyQuizzes,
@@ -57,6 +58,7 @@ export function HostPanel() {
           router.replace("/signin?next=/host");
           return;
         }
+        await ensureProfile(user, user.email?.split("@")[0] ?? "host");
         setHostId(user.id);
         const myQuizzes = await getMyQuizzes(user.id);
         setQuizzes(myQuizzes);

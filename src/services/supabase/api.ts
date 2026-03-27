@@ -38,11 +38,22 @@ export async function signOut() {
 }
 
 export async function ensureProfile(user: User, username: string) {
-  const { error } = await supabase.from("users").upsert({
+  const { data: existing } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (existing) {
+    return;
+  }
+
+  const { error } = await supabase.from("users").insert({
     id: user.id,
     username,
   });
-  if (error) {
+
+  if (error && error.code !== "23505") {
     throw error;
   }
 }
@@ -94,6 +105,26 @@ export async function deleteQuiz(quizId: string) {
   if (error) {
     throw error;
   }
+}
+
+export async function getQuestionCountsForQuizzes(quizIds: string[]) {
+  if (quizIds.length === 0) {
+    return {} as Record<string, number>;
+  }
+
+  const { data, error } = await supabase
+    .from("questions")
+    .select("quiz_id")
+    .in("quiz_id", quizIds);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).reduce<Record<string, number>>((acc, row) => {
+    acc[row.quiz_id] = (acc[row.quiz_id] ?? 0) + 1;
+    return acc;
+  }, {});
 }
 
 export async function getQuizQuestions(quizId: string) {
@@ -180,6 +211,57 @@ export async function createQuestion(quizId: string, payload: CreateQuestionPayl
   }
 
   return question;
+}
+
+export async function updateQuestion(
+  questionId: string,
+  quizId: string,
+  payload: CreateQuestionPayload,
+) {
+  let imageUrl: string | null = null;
+  if (payload.imageFile) {
+    imageUrl = await uploadQuestionImage(quizId, payload.imageFile);
+  }
+
+  const updateData: Record<string, unknown> = {
+    text: payload.text,
+    time_limit: payload.timeLimit,
+  };
+  if (imageUrl) updateData.image_url = imageUrl;
+
+  const { error: qErr } = await supabase
+    .from("questions")
+    .update(updateData)
+    .eq("id", questionId);
+  if (qErr) throw qErr;
+
+  const { error: delErr } = await supabase
+    .from("answers")
+    .delete()
+    .eq("question_id", questionId);
+  if (delErr) throw delErr;
+
+  const answerRows = payload.answers.map((a) => ({
+    question_id: questionId,
+    text: a.text,
+    is_correct: a.isCorrect,
+  }));
+  const { error: aErr } = await supabase.from("answers").insert(answerRows);
+  if (aErr) throw aErr;
+}
+
+export async function deleteQuestion(questionId: string) {
+  const { error: aErr } = await supabase
+    .from("answers")
+    .delete()
+    .eq("question_id", questionId);
+  if (aErr) throw aErr;
+
+  const { error: qErr } = await supabase
+    .from("questions")
+    .delete()
+    .eq("id", questionId);
+  if (qErr) throw qErr;
 }
 
 export async function createSession(quizId: string, hostId: string) {
