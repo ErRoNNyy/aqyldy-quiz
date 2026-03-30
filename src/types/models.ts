@@ -47,6 +47,7 @@ export interface SessionParticipant {
   user_id: UUID | null;
   nickname: string;
   score: number;
+  avatar_url: string | null;
 }
 
 export interface ResponseRow {

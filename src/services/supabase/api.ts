@@ -296,7 +296,12 @@ export async function findSessionByCode(code: string) {
   return data;
 }
 
-export async function addParticipant(sessionId: string, nickname: string, userId?: string) {
+export async function addParticipant(
+  sessionId: string,
+  nickname: string,
+  userId?: string,
+  avatarUrl?: string,
+) {
   const { data, error } = await supabase
     .from("session_participants")
     .insert({
@@ -304,6 +309,7 @@ export async function addParticipant(sessionId: string, nickname: string, userId
       user_id: userId ?? null,
       nickname,
       score: 0,
+      avatar_url: avatarUrl ?? null,
     })
     .select("*")
     .single<SessionParticipant>();
@@ -311,6 +317,37 @@ export async function addParticipant(sessionId: string, nickname: string, userId
     throw error;
   }
   return data;
+}
+
+export async function getSessionParticipants(sessionId: string) {
+  const { data, error } = await supabase
+    .from("session_participants")
+    .select("*")
+    .eq("session_id", sessionId)
+    .returns<SessionParticipant[]>();
+  if (error) throw error;
+  return data;
+}
+
+export function subscribeParticipants(
+  sessionId: string,
+  onInsert: (p: SessionParticipant) => void,
+): RealtimeChannel {
+  return supabase
+    .channel(`public:session_participants:session_id=eq.${sessionId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "session_participants",
+        filter: `session_id=eq.${sessionId}`,
+      },
+      (payload) => {
+        onInsert(payload.new as SessionParticipant);
+      },
+    )
+    .subscribe();
 }
 
 export async function getSession(sessionId: string) {
@@ -339,6 +376,26 @@ export async function completeSession(sessionId: string) {
   const { error } = await supabase
     .from("sessions")
     .update({ status: "completed", current_question: null })
+    .eq("id", sessionId);
+  if (error) {
+    throw error;
+  }
+}
+
+export async function deleteSession(sessionId: string) {
+  await supabase
+    .from("session_participants")
+    .delete()
+    .eq("session_id", sessionId);
+
+  await supabase
+    .from("responses")
+    .delete()
+    .eq("session_id", sessionId);
+
+  const { error } = await supabase
+    .from("sessions")
+    .delete()
     .eq("id", sessionId);
   if (error) {
     throw error;

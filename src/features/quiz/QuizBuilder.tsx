@@ -9,6 +9,7 @@ import clsx from "clsx";
 import {
   createQuestion,
   createQuiz,
+  createSession,
   deleteQuestion,
   ensureProfile,
   getAnswersByQuestionIds,
@@ -223,6 +224,27 @@ export function QuizBuilder() {
     }
   }
 
+  async function handlePublish() {
+    if (!quiz || !userId) {
+      setStatus("Save at least one question first.");
+      return;
+    }
+    if (questions.length === 0) {
+      setStatus("Add at least one question before publishing.");
+      return;
+    }
+    setLoading(true);
+    setStatus("");
+    try {
+      const session = await createSession(quiz.id, userId);
+      router.push(`/host?quiz=${quiz.id}&session=${session.id}`);
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#c8e6e8]">
       {/* HEADER */}
@@ -281,6 +303,7 @@ export function QuizBuilder() {
               Save
             </button>
             <button
+              onClick={handlePublish}
               disabled={loading}
               className="w-full rounded-md bg-orange-500 py-2 text-xs font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
             >

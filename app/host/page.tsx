@@ -11,9 +11,5 @@ const HostPanel = dynamic(
 );
 
 export default function HostPage() {
-  return (
-    <main className="min-h-screen bg-zinc-100 p-6">
-      <HostPanel />
-    </main>
-  );
+  return <HostPanel />;
 }
