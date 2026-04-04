@@ -557,29 +557,60 @@ export function HostPanel() {
     return (
       <div className="flex min-h-screen flex-col bg-[#27b8c9]">
         {header}
-        <main className="flex flex-1 flex-col items-center gap-5 p-6">
-          <span className="rounded-full bg-orange-500 px-6 py-2 text-lg font-bold text-white">
-            Question {qIdx + 1} of {questions.length}
-          </span>
+        <main className="flex flex-1 flex-col gap-4 p-6">
+          {/* Top row */}
+          <div className="flex w-full items-start justify-between gap-4">
+            <div className="flex items-center gap-2 rounded-lg bg-cyan-600/50 px-4 py-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+              <span className="text-base font-bold text-white">
+                {participants.length}
+              </span>
+            </div>
 
-          <div className="w-full max-w-3xl rounded-2xl bg-white px-8 py-6 text-center shadow-xl">
-            <p className="text-xl font-bold text-zinc-800">{curQ.text}</p>
+            <div className="flex min-w-0 flex-1 flex-col items-center px-4">
+              <div className="w-full max-w-2xl rounded-xl bg-white px-6 py-4 text-center shadow-lg">
+                <p className="text-xl font-bold text-zinc-800">{curQ.text}</p>
+              </div>
+            </div>
+
+            <span className="rounded-lg bg-cyan-600/50 px-4 py-2 text-sm font-bold text-white">
+              Question {qIdx + 1} of {questions.length}
+            </span>
           </div>
 
-          <div className="grid w-full max-w-3xl grid-cols-2 gap-4">
+          {/* Image */}
+          {curQ.image_url && (
+            <div className="flex justify-center">
+              <img
+                src={curQ.image_url}
+                alt=""
+                className="rounded-xl"
+                style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
+              />
+            </div>
+          )}
+
+
+          {/* Answer grid */}
+          <div className="mx-auto mt-auto grid w-full max-w-4xl grid-cols-2 gap-4 pb-2">
             {curAnswers.map((a, i) => (
               <div
                 key={a.id}
-                className={`flex items-center gap-3 rounded-xl px-6 py-5 text-lg font-bold text-white ${
+                className={`flex items-center gap-4 rounded-xl px-5 py-4 text-lg font-bold text-white ${
                   a.is_correct
-                    ? "bg-green-500 ring-4 ring-green-300"
-                    : "bg-zinc-400 opacity-60"
+                    ? `${ANSWER_BG[i % 4]} ring-4 ring-green-400`
+                    : "bg-zinc-400/60"
                 }`}
               >
-                <span className="text-2xl">
-                  {a.is_correct ? "✓" : ANSWER_SHAPES[i % 4]}
+                <span className="shrink-0 text-2xl text-white/90">
+                  {ANSWER_SHAPES[i % 4]}
                 </span>
-                <span>{a.text}</span>
+                <span className="flex-1">{a.text}</span>
+                <span className="text-xl">
+                  {a.is_correct ? "✓" : "✗"}
+                </span>
               </div>
             ))}
           </div>
@@ -592,44 +623,43 @@ export function HostPanel() {
   if (phase === "scoreboard") {
     const top5 = leaderboard.slice(0, 5);
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="min-h-screen bg-[#27bccb]">
         {header}
-        <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
-          <h2 className="text-3xl font-bold text-white">Scoreboard</h2>
-          <div className="w-full max-w-lg space-y-3">
+        <main className="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 pt-9">
+          <div className="mb-10 w-full max-w-[650px] rounded-[10px] bg-[#f2f2f2] py-5 text-center shadow-md">
+            <h2 className="text-[30px] font-medium text-[#1f1f1f]">Scoreboard</h2>
+          </div>
+
+          <div className="w-full max-w-[1220px]">
             {top5.map((e, i) => (
               <div
                 key={e.id}
-                className="flex items-center gap-4 rounded-xl bg-white px-5 py-3 shadow-lg"
+                className={`mb-4 flex min-h-[86px] items-center px-4 shadow-md ${
+                  i === 0 ? "bg-[#f3f3f3]" : "bg-[#5b9faa]"
+                }`}
               >
-                <span className="w-8 text-2xl font-bold text-zinc-400">
-                  {i + 1}
-                </span>
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-100">
+                <div className="mr-4 h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full bg-[#d9d9d9]">
                   {e.avatar_url ? (
-                    <img
-                      src={e.avatar_url}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">
-                      ?
-                    </div>
-                  )}
+                    <img src={e.avatar_url} alt={e.nickname} className="h-full w-full object-cover" />
+                  ) : null}
                 </div>
-                <span className="flex-1 font-bold text-zinc-800">
+                <div className={`flex-1 text-[28px] font-bold leading-none drop-shadow-sm ${
+                  i === 0 ? "text-[#4a4a4a]" : "text-white"
+                }`}>
                   {e.nickname}
-                </span>
-                <span className="font-bold text-orange-500">
-                  {e.score} pts
-                </span>
+                </div>
+                <div className={`pr-12 text-[28px] font-bold leading-none drop-shadow-sm ${
+                  i === 0 ? "text-[#4a4a4a]" : "text-white"
+                }`}>
+                  {e.score}
+                </div>
               </div>
             ))}
           </div>
+
           <button
             onClick={() => void advance()}
-            className="mt-4 rounded-xl bg-orange-500 px-8 py-3 text-lg font-bold text-white transition hover:bg-orange-600"
+            className="mt-6 rounded-xl bg-orange-500 px-8 py-3 text-lg font-bold text-white transition hover:bg-orange-600"
           >
             {qIdx + 1 >= questions.length ? "Final Results" : "Next Question"}
           </button>

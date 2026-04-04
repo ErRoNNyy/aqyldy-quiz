@@ -420,40 +420,105 @@ export function PlayPanel() {
   }
 
   /* ---- RESULTS ---- */
-  if (phase === "results") {
+  if (phase === "results" && question) {
     const answered = hasSubmitted;
     const wasCorrect = selectedAnswerId
       ? (answers.find((a) => a.id === selectedAnswerId)?.is_correct ?? false)
       : false;
 
+    const overlayBg = !answered
+      ? "bg-zinc-500"
+      : wasCorrect
+        ? "bg-green-500"
+        : "bg-red-500";
+    const overlayText = !answered
+      ? "Time's up!"
+      : wasCorrect
+        ? "Correct"
+        : "Incorrect";
+
     return (
       <div className="flex min-h-screen flex-col bg-[#27b8c9]">
         {headerBar}
-        <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
-          {answered ? (
-            wasCorrect ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-green-500 shadow-lg">
-                  <span className="text-5xl text-white">&#10003;</span>
-                </div>
-                <p className="text-3xl font-bold text-white">Correct!</p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-red-500 shadow-lg">
-                  <span className="text-5xl text-white">&#10007;</span>
-                </div>
-                <p className="text-3xl font-bold text-white">Incorrect</p>
-              </div>
-            )
-          ) : (
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-zinc-500 shadow-lg">
-                <span className="text-4xl text-white">!</span>
-              </div>
-              <p className="text-3xl font-bold text-white">Time&apos;s up!</p>
+        <main className="flex flex-1 flex-col gap-4 p-6">
+          {/* Top row */}
+          <div className="flex w-full items-start justify-between gap-4">
+            <div className="flex items-center gap-2 rounded-lg bg-cyan-600/50 px-4 py-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+              <span className="text-base font-bold text-white">
+                {participants.length}
+              </span>
             </div>
-          )}
+
+            <div className="flex min-w-0 flex-1 flex-col items-center px-4">
+              <div className="w-full max-w-2xl rounded-xl bg-white px-6 py-4 text-center shadow-lg">
+                <p className="text-xl font-bold text-zinc-800">
+                  {question.text}
+                </p>
+              </div>
+            </div>
+
+            <span className="rounded-lg bg-cyan-600/50 px-4 py-2 text-sm font-bold text-white">
+              Results
+            </span>
+          </div>
+
+          {/* Image with result overlay on top */}
+          <div className="relative flex justify-center">
+            {question.image_url && (
+              <img
+                src={question.image_url}
+                alt=""
+                className="rounded-xl"
+                style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
+              />
+            )}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className={`rounded-2xl ${overlayBg} px-12 py-6 text-center shadow-2xl`}>
+                <p className="text-3xl font-bold text-white">{overlayText}</p>
+                {answered && (
+                  <p className="text-xl font-bold text-white">
+                    {wasCorrect ? "+100 pts" : "-50 pts"}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Answer grid with correct/wrong indicators */}
+          <div className="mx-auto mt-auto grid w-full max-w-4xl grid-cols-2 gap-4 pb-2">
+            {answers.map((a, i) => {
+              const isCorrectAnswer = a.is_correct;
+              const isUserPick = a.id === selectedAnswerId;
+              let bg: string;
+              let ring = "";
+              if (isCorrectAnswer) {
+                bg = ANSWER_BG[i % 4];
+                ring = "ring-4 ring-green-400";
+              } else if (isUserPick) {
+                bg = ANSWER_BG[i % 4];
+                ring = "ring-4 ring-red-400";
+              } else {
+                bg = "bg-zinc-400/60";
+              }
+              return (
+                <div
+                  key={a.id}
+                  className={`flex items-center gap-4 rounded-xl px-5 py-4 text-lg font-bold text-white ${bg} ${ring}`}
+                >
+                  <span className="shrink-0 text-2xl text-white/90">
+                    {ANSWER_SHAPES[i % 4]}
+                  </span>
+                  <span className="flex-1">{a.text}</span>
+                  <span className="text-xl">
+                    {isCorrectAnswer ? "✓" : "✗"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </main>
       </div>
     );
@@ -463,42 +528,41 @@ export function PlayPanel() {
   if (phase === "scoreboard") {
     const top5 = leaderboard.slice(0, 5);
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="min-h-screen bg-[#27bccb]">
         {headerBar}
-        <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
-          <h2 className="text-3xl font-bold text-white">Scoreboard</h2>
-          <div className="w-full max-w-lg space-y-3">
+        <main className="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 pt-9">
+          <div className="mb-10 w-full max-w-[650px] rounded-[10px] bg-[#f2f2f2] py-5 text-center shadow-md">
+            <h2 className="text-[30px] font-medium text-[#1f1f1f]">Scoreboard</h2>
+          </div>
+
+          <div className="w-full max-w-[1220px]">
             {top5.map((e, i) => (
               <div
                 key={e.id}
-                className="flex items-center gap-4 rounded-xl bg-white px-5 py-3 shadow-lg"
+                className={`mb-4 flex min-h-[86px] items-center px-4 shadow-md ${
+                  i === 0 ? "bg-[#f3f3f3]" : "bg-[#5b9faa]"
+                }`}
               >
-                <span className="w-8 text-2xl font-bold text-zinc-400">
-                  {i + 1}
-                </span>
-                <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-100">
+                <div className="mr-4 h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full bg-[#d9d9d9]">
                   {e.avatar_url ? (
-                    <img
-                      src={e.avatar_url}
-                      alt=""
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">
-                      ?
-                    </div>
-                  )}
+                    <img src={e.avatar_url} alt={e.nickname} className="h-full w-full object-cover" />
+                  ) : null}
                 </div>
-                <span className="flex-1 font-bold text-zinc-800">
+                <div className={`flex-1 text-[28px] font-bold leading-none drop-shadow-sm ${
+                  i === 0 ? "text-[#4a4a4a]" : "text-white"
+                }`}>
                   {e.nickname}
-                </span>
-                <span className="font-bold text-orange-500">
-                  {e.score} pts
-                </span>
+                </div>
+                <div className={`pr-12 text-[28px] font-bold leading-none drop-shadow-sm ${
+                  i === 0 ? "text-[#4a4a4a]" : "text-white"
+                }`}>
+                  {e.score}
+                </div>
               </div>
             ))}
           </div>
-          <p className="text-sm text-white/70">Waiting for host...</p>
+
+          <p className="mt-4 text-sm text-white/70">Waiting for host...</p>
         </main>
       </div>
     );
