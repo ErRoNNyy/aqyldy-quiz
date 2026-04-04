@@ -91,6 +91,10 @@ export function PlayPanel() {
         setPhase("finalLeaderboard");
         return;
       }
+      if (!s.current_question && prevQRef.current) {
+        prevQRef.current = null;
+        return;
+      }
       if (s.current_question && s.current_question !== prevQRef.current) {
         prevQRef.current = s.current_question;
         void loadQuestion(s.current_question).then(() => {

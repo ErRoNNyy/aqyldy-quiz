@@ -240,8 +240,9 @@ export function HostPanel() {
     if (waitRef.current) clearInterval(waitRef.current);
   }
 
-  function handleSkip() {
-    setPhase("results");
+  async function handleSkip() {
+    if (!session) return;
+    await advance();
   }
 
   async function advance() {
