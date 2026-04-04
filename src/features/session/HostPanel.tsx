@@ -672,66 +672,62 @@ export function HostPanel() {
   if (phase === "finalLeaderboard") {
     const top3 = leaderboard.slice(0, 3);
     const podiumOrder = [top3[1], top3[0], top3[2]];
-    const podiumH = ["h-24", "h-36", "h-16"];
-    const podiumBg = ["bg-gray-300", "bg-yellow-400", "bg-orange-300"];
-    const podiumRing = ["", "ring-4 ring-yellow-400", ""];
-    const avatarSz = ["h-16 w-16", "h-20 w-20", "h-14 w-14"];
-    const ranks = ["2", "1", "3"];
-    const rankClr = ["text-zinc-600", "text-yellow-800", "text-orange-700"];
-    const nameSz = ["text-base", "text-xl", "text-sm"];
+    const podiumConfig = [
+      { place: 2, medal: "/places/silver_2.png", height: "h-[345px]", width: "w-[265px]", medalSize: "h-[108px] w-[108px]", avatarSize: "h-[112px] w-[112px]" },
+      { place: 1, medal: "/places/gold 1.png", height: "h-[445px]", width: "w-[265px]", medalSize: "h-[92px] w-[92px]", avatarSize: "h-[142px] w-[142px]" },
+      { place: 3, medal: "/places/bronze_3.png", height: "h-[270px]", width: "w-[265px]", medalSize: "h-[108px] w-[108px]", avatarSize: "h-[112px] w-[112px]" },
+    ];
+    const totalQ = questions.length;
+    const winner = top3[0];
 
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="min-h-screen bg-[#27bccb]">
         {header}
-        <main className="flex flex-1 flex-col items-center justify-center gap-8 px-6">
-          <h2 className="text-4xl font-bold text-white">Final Leaderboard</h2>
+        <main className="mx-auto flex w-full max-w-[1400px] flex-col items-center px-0 pt-4">
 
-          <div className="flex items-end gap-4">
-            {podiumOrder.map((entry, i) =>
-              entry ? (
-                <div
-                  key={entry.id}
-                  className="flex w-32 flex-col items-center"
-                >
-                  <div
-                    className={`overflow-hidden rounded-full bg-zinc-200 ${avatarSz[i]} ${podiumRing[i]}`}
-                  >
-                    {entry.avatar_url ? (
-                      <img
-                        src={entry.avatar_url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-zinc-400">
-                        ?
-                      </div>
-                    )}
-                  </div>
-                  <p className={`mt-2 font-bold text-white ${nameSz[i]}`}>
-                    {entry.nickname}
-                  </p>
-                  <p className="text-sm text-white/80">{entry.score} pts</p>
-                  <div
-                    className={`mt-2 flex w-full items-center justify-center rounded-t-xl ${podiumBg[i]} ${podiumH[i]}`}
-                  >
-                    <span className={`text-3xl font-bold ${rankClr[i]}`}>
-                      {ranks[i]}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div key={i} className="w-32" />
-              ),
-            )}
+          <div className= "mb-8 w-full max-w-[1070px] rounded-[12px] bg-[#f2f2f2] py-5 text-center shadow-md">
+            <h2 className="text-[30px] font-medium text-[#1f1f1f]">
+              {selectedQuiz?.title ?? "Quiz Complete"}
+            </h2>
           </div>
 
-          <button
-            onClick={() => void handleLeave("/home")}
-            className="mt-6 rounded-xl bg-orange-500 px-8 py-3 text-lg font-bold text-white transition hover:bg-orange-600"
-          >
-            Back to Home
-          </button>
+          <div className="mb-6 rounded-[12px] bg-[#f2f2f2] px-10 py-4 text-center shadow-md">
+            <p className="text-[28px] font-medium text-[#1f1f1f]">
+              {winner ? `${winner.nickname} wins with ${winner.score} points!` : "Final results"}
+            </p>
+          </div>
+
+          <div className="mb-[30px] flex w-full items-end justify-center">
+            {podiumOrder.map((entry, i) => {
+              const cfg = podiumConfig[i];
+              if (!entry) return <div key={i} className={cfg.width} />;
+              const correct = totalQ > 0 ? Math.min(totalQ, Math.floor(entry.score / 100)) : 0;
+              return (
+                <div key={entry.id} className="flex flex-col items-center">
+                  <div className="mb-3 rounded-[10px] bg-[#f2f2f2] px-8 py-2.5 shadow-md">
+                    <p className="text-[22px] font-medium text-[#1f1f1f]">{entry.nickname}</p>
+                  </div>
+                  <div className={`flex ${cfg.width} ${cfg.height} flex-col items-center bg-[#5b9faa] px-6 pt-6 shadow-[8px_8px_0_rgba(0,0,0,0.08)]`}>
+                    <div className={`mb-5 overflow-hidden bg-white ${cfg.avatarSize}`}>
+                      {entry.avatar_url ? (
+                        <img src={entry.avatar_url} alt={entry.nickname} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-[#e5e5e5] text-3xl font-bold text-zinc-500">
+                          {entry.nickname?.[0]?.toUpperCase() ?? "?"}
+                        </div>
+                      )}
+                    </div>
+                    <img src={cfg.medal} alt={`Place ${cfg.place}`} className={`${cfg.medalSize} object-contain`} />
+                    <p className="mt-5 text-[32px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>
+                    <p className="mt-4 text-center text-[28px] font-bold leading-none text-white drop-shadow-sm">
+                      {correct} out of {totalQ}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
         </main>
       </div>
     );
