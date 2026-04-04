@@ -17,6 +17,7 @@ import {
 } from "@/src/services/supabase/api";
 import { useSessionRealtime } from "@/src/hooks/useSessionRealtime";
 import { useSessionStore } from "@/src/store/sessionStore";
+import CountdownBar from "@/src/components/ui/CountdownBar";
 import type { Answer, Question, Session, SessionParticipant } from "@/src/types/models";
 
 type GamePhase =
@@ -296,7 +297,6 @@ export function PlayPanel() {
 
   /* ---- COUNTDOWN ---- */
   if (phase === "countdown" && question) {
-    const pct = (cdVal / 3) * 100;
     return (
       <div className="flex min-h-screen flex-col bg-[#27b8c9]">
         {headerBar}
@@ -311,18 +311,11 @@ export function PlayPanel() {
             <img
               src={question.image_url}
               alt=""
-              className="max-h-48 rounded-xl shadow-lg"
+              className="rounded-xl"
+              style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
             />
           )}
-          <p className="text-[120px] font-black leading-none text-white drop-shadow-lg">
-            {cdVal}
-          </p>
-          <div className="w-full max-w-xl overflow-hidden rounded-full bg-white/30">
-            <div
-              className="h-3 rounded-full bg-orange-500 transition-all duration-1000 ease-linear"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+          <CountdownBar key={question.id} duration={3000} />
         </main>
       </div>
     );

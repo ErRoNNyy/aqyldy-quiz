@@ -23,6 +23,7 @@ import {
 import { useSessionRealtime } from "@/src/hooks/useSessionRealtime";
 import { useSessionStore } from "@/src/store/sessionStore";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
+import CountdownBar from "@/src/components/ui/CountdownBar";
 import type {
   Answer,
   Question,
@@ -443,7 +444,6 @@ export function HostPanel() {
 
   /* ---- COUNTDOWN ---- */
   if (phase === "countdown" && curQ) {
-    const pct = (cdVal / 3) * 100;
     return (
       <div className="flex min-h-screen flex-col bg-[#27b8c9]">
         {header}
@@ -458,18 +458,11 @@ export function HostPanel() {
             <img
               src={curQ.image_url}
               alt=""
-              className="max-h-48 rounded-xl shadow-lg"
+              className="rounded-xl"
+              style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
             />
           )}
-          <p className="text-[120px] font-black leading-none text-white drop-shadow-lg">
-            {cdVal}
-          </p>
-          <div className="w-full max-w-xl overflow-hidden rounded-full bg-white/30">
-            <div
-              className="h-3 rounded-full bg-orange-500 transition-all duration-1000 ease-linear"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+          <CountdownBar key={qIdx} duration={3000} />
         </main>
       </div>
     );
