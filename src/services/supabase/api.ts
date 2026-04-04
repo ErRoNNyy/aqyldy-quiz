@@ -467,6 +467,19 @@ export async function submitResponse(
   }
 }
 
+export async function getResponseCountForQuestion(
+  sessionId: string,
+  questionId: string,
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("responses")
+    .select("*", { count: "exact", head: true })
+    .eq("session_id", sessionId)
+    .eq("question_id", questionId);
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function getLeaderboard(sessionId: string) {
   const { data, error } = await supabase
     .from("session_participants")

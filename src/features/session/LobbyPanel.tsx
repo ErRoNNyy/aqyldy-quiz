@@ -128,10 +128,6 @@ export function LobbyPanel() {
                   </button>
                 ))}
               </div>
-
-              <p className="pt-3 text-center text-[14px] font-semibold text-black">
-                Done
-              </p>
             </div>
 
             <button
