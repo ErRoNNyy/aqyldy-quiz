@@ -51,6 +51,7 @@ export function PlayPanel() {
   const [phase, setPhase] = useState<GamePhase>("lobby");
   const [cdVal, setCdVal] = useState(3);
   const [ansTimer, setAnsTimer] = useState(0);
+  const [lastDelta, setLastDelta] = useState(0);
 
   const leaderboard = useSessionStore((s) => s.leaderboard);
   const setLeaderboard = useSessionStore((s) => s.setLeaderboard);
@@ -96,6 +97,7 @@ export function PlayPanel() {
           setPhase("countdown");
           setCdVal(3);
           setSelectedAnswerId(null);
+          setLastDelta(0);
         });
       }
     },
@@ -194,8 +196,11 @@ export function PlayPanel() {
   async function handlePickAnswer(answerId: string) {
     if (hasSubmitted || !sessionId || !participantId || !question) return;
     setSelectedAnswerId(answerId);
+    const tl = question.time_limit ?? 30;
+    const timeRatio = tl > 0 ? 1 - ansTimer / tl : 1;
     try {
-      await submitResponse(sessionId, participantId, question.id, answerId);
+      const delta = await submitResponse(sessionId, participantId, question.id, answerId, timeRatio);
+      setLastDelta(delta);
       setSubmittedQuestions((c) => ({ ...c, [question.id]: true }));
     } catch (e) {
       setStatus((e as Error).message);
@@ -480,7 +485,7 @@ export function PlayPanel() {
                 <p className="text-3xl font-bold text-white">{overlayText}</p>
                 {answered && (
                   <p className="text-xl font-bold text-white">
-                    {wasCorrect ? "+100 pts" : "-50 pts"}
+                    {lastDelta >= 0 ? `+${lastDelta}` : `${lastDelta}`} pts
                   </p>
                 )}
               </div>

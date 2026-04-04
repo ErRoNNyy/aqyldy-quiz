@@ -426,15 +426,41 @@ export async function getAnswersForQuestion(questionId: string) {
   return data;
 }
 
+/**
+ * @param timeRatio 0 = answered instantly, 1 = answered at the last second
+ * Correct:   1000 (instant) → 500 (last second)
+ * Incorrect: -100 (instant) → -500 (last second)
+ * Returns the points delta applied.
+ */
 export async function submitResponse(
   sessionId: string,
   participantId: string,
   questionId: string,
   answerId: string,
-) {
+  timeRatio: number,
+): Promise<number> {
+  const clamped = Math.max(0, Math.min(1, timeRatio));
   const answers = await getAnswersForQuestion(questionId);
   const selected = answers.find((answer) => answer.id === answerId);
   const isCorrect = Boolean(selected?.is_correct);
+
+  const delta = isCorrect
+    ? Math.round(1000 - 500 * clamped)
+    : -Math.round(100 + 400 * clamped);
+
+  const { data: participant, error: participantError } = await supabase
+    .from("session_participants")
+    .select("*")
+    .eq("id", participantId)
+    .single<SessionParticipant>();
+  if (participantError) throw participantError;
+
+  const newScore = Math.max(0, participant.score + delta);
+  const { error: updateScoreError } = await supabase
+    .from("session_participants")
+    .update({ score: newScore })
+    .eq("id", participantId);
+  if (updateScoreError) throw updateScoreError;
 
   const { error } = await supabase.from("responses").insert({
     session_id: sessionId,
@@ -443,28 +469,9 @@ export async function submitResponse(
     answer_id: answerId,
     is_correct: isCorrect,
   });
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
-  if (isCorrect) {
-    const { data: participant, error: participantError } = await supabase
-      .from("session_participants")
-      .select("*")
-      .eq("id", participantId)
-      .single<SessionParticipant>();
-    if (participantError) {
-      throw participantError;
-    }
-
-    const { error: updateScoreError } = await supabase
-      .from("session_participants")
-      .update({ score: participant.score + 100 })
-      .eq("id", participantId);
-    if (updateScoreError) {
-      throw updateScoreError;
-    }
-  }
+  return delta;
 }
 
 export async function getResponseCountForQuestion(
@@ -478,6 +485,22 @@ export async function getResponseCountForQuestion(
     .eq("question_id", questionId);
   if (error) throw error;
   return count ?? 0;
+}
+
+export async function getCorrectCounts(
+  sessionId: string,
+): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("responses")
+    .select("participant_id")
+    .eq("session_id", sessionId)
+    .eq("is_correct", true);
+  if (error) throw error;
+  const map: Record<string, number> = {};
+  for (const r of data ?? []) {
+    map[r.participant_id] = (map[r.participant_id] ?? 0) + 1;
+  }
+  return map;
 }
 
 export async function getLeaderboard(sessionId: string) {

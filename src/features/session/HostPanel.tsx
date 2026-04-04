@@ -14,6 +14,7 @@ import {
   getLeaderboard,
   getMyQuizzes,
   getQuizQuestions,
+  getCorrectCounts,
   getSession,
   getSessionParticipants,
   removeSubscription,
@@ -70,6 +71,7 @@ export function HostPanel() {
 
   const leaderboard = useSessionStore((s) => s.leaderboard);
   const setLeaderboard = useSessionStore((s) => s.setLeaderboard);
+  const [correctMap, setCorrectMap] = useState<Record<string, number>>({});
 
   const selectedQuiz = useMemo(
     () => quizzes.find((q) => q.id === selectedQuizId) ?? null,
@@ -248,6 +250,7 @@ export function HostPanel() {
     if (next >= questions.length) {
       await completeSession(session.id);
       setLeaderboard(await getLeaderboard(session.id));
+      setCorrectMap(await getCorrectCounts(session.id));
       setPhase("finalLeaderboard");
     } else {
       await setCurrentQuestion(session.id, questions[next].id);
@@ -701,7 +704,7 @@ export function HostPanel() {
             {podiumOrder.map((entry, i) => {
               const cfg = podiumConfig[i];
               if (!entry) return <div key={i} className={cfg.width} />;
-              const correct = totalQ > 0 ? Math.min(totalQ, Math.floor(entry.score / 100)) : 0;
+              const correct = correctMap[entry.id] ?? 0;
               return (
                 <div key={entry.id} className="flex flex-col items-center">
                   <div className="mb-3 rounded-[10px] bg-[#f2f2f2] px-8 py-2.5 shadow-md">
@@ -719,7 +722,7 @@ export function HostPanel() {
                     </div>
                     <img src={cfg.medal} alt={`Place ${cfg.place}`} className={`${cfg.medalSize} object-contain`} />
                     <p className="mt-5 text-[32px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>
-                    <p className="mt-4 text-center text-[28px] font-bold leading-none text-white drop-shadow-sm">
+                    <p className="mt-3 text-center text-[20px] font-bold leading-none text-white drop-shadow-sm">
                       {correct} out of {totalQ}
                     </p>
                   </div>
