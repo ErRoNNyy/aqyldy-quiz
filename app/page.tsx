@@ -25,11 +25,11 @@ export default function Home() {
   }, [router]);
 
   if (!checked) {
-    return <div className="min-h-screen bg-cyan-500" />;
+    return <div className="min-h-screen bg-[#1fb6c4]" />;
   }
 
   return (
-    <div className="min-h-screen bg-cyan-500">
+    <div className="min-h-screen bg-[#1fb6c4]">
       <header className="flex items-center justify-between bg-orange-500 px-11 py-2">
         <Link href="/" className="text-sm font-semibold text-white">
           Aqyldy quiz

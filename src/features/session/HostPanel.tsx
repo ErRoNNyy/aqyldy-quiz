@@ -377,7 +377,7 @@ export function HostPanel() {
               {participants.map((p) => (
                 <div
                   key={p.id}
-                  className="flex w-[110px] flex-col items-center bg-[#efefef] px-3 py-3"
+                  className="flex min-w-[110px] max-w-[160px] flex-col items-center bg-[#efefef] px-3 py-3"
                 >
                   <div className="flex h-[74px] w-[74px] items-center justify-center">
                     {p.avatar_url ? (
@@ -403,7 +403,7 @@ export function HostPanel() {
                       </svg>
                     )}
                   </div>
-                  <span className="mt-3 text-center text-[14px] font-bold text-black">
+                  <span className="mt-3 w-full break-words text-center text-[14px] font-bold text-black">
                     {p.nickname}
                   </span>
                 </div>
