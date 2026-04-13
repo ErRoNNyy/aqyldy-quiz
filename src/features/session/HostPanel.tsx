@@ -2,8 +2,12 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  SiteHeader,
+  SiteHeaderActionButton,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 import {
   completeSession,
   createSession,
@@ -11,6 +15,7 @@ import {
   ensureProfile,
   getAnswersForQuestion,
   getCurrentUser,
+  getProfileMaybe,
   getLeaderboard,
   getMyQuizzes,
   getQuizQuestions,
@@ -20,7 +25,9 @@ import {
   removeSubscription,
   setCurrentQuestion,
   subscribeParticipants,
+  isProfileComplete,
 } from "@/src/services/supabase/api";
+import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
 import { useSessionRealtime } from "@/src/hooks/useSessionRealtime";
 import { useSessionStore } from "@/src/store/sessionStore";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
@@ -142,6 +149,15 @@ export function HostPanel() {
         return;
       }
       await ensureProfile(user, user.email?.split("@")[0] ?? "host");
+      const profile = await getProfileMaybe(user.id);
+      if (!isProfileComplete(profile)) {
+        const qs = new URLSearchParams();
+        if (queryQuizId) qs.set("quiz", queryQuizId);
+        if (querySessionId) qs.set("session", querySessionId);
+        const suffix = qs.toString() ? `?${qs.toString()}` : "";
+        router.replace(profileSetupUrl(`/host${suffix}`));
+        return;
+      }
       setHostId(user.id);
       const rows = await getMyQuizzes(user.id);
       setQuizzes(rows);
@@ -157,7 +173,7 @@ export function HostPanel() {
       }
     }
     void init();
-  }, [router, selectedQuizId, querySessionId]);
+  }, [router, selectedQuizId, querySessionId, queryQuizId]);
 
   useEffect(() => {
     if (!selectedQuizId) {
@@ -294,16 +310,8 @@ export function HostPanel() {
 
   if (!session) {
     return (
-      <div className="flex min-h-screen flex-col bg-cyan-500">
-        <header className="flex items-center justify-between bg-orange-500 px-6 py-2.5">
-          <span className="text-xl font-bold text-white">Aqyldy quiz</span>
-          <Link
-            href="/home"
-            className="rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700"
-          >
-            Home
-          </Link>
-        </header>
+      <div className="flex min-h-screen flex-col bg-background">
+        <SiteHeader right={<SiteHeaderActionLink href="/home">Home</SiteHeaderActionLink>} />
         <main className="flex flex-1 flex-col items-center justify-center gap-5 px-6">
           <h1 className="text-2xl font-bold text-white">Host a Quiz</h1>
           <select
@@ -335,28 +343,20 @@ export function HostPanel() {
   }
 
   const header = (
-    <header className="flex items-center justify-between bg-orange-500 px-7 py-3">
-      <button
-        onClick={() => void handleLeave("/")}
-        className="text-2xl font-bold text-white transition hover:opacity-80"
-      >
-        Aqyldy quiz
-      </button>
-      <button
-        onClick={() => void handleLeave("/home")}
-        className="rounded-xl bg-cyan-500 px-8 py-2 font-bold text-white transition hover:bg-cyan-600"
-      >
-        Home
-      </button>
-    </header>
+    <SiteHeader
+      onBrandClick={() => void handleLeave("/")}
+      right={
+        <SiteHeaderActionButton onClick={() => void handleLeave("/home")}>Home</SiteHeaderActionButton>
+      }
+    />
   );
 
   /* ---- LOBBY ---- */
   if (phase === "lobby") {
     return (
-      <div className="min-h-screen bg-[#27b8c9]">
+      <div className="min-h-screen bg-background">
         {header}
-        <main className="flex min-h-[calc(100vh-72px)] px-10 py-8">
+        <main className="flex min-h-[calc(100vh-3.25rem)] px-10 py-8">
           <div className="flex flex-1 flex-col items-center">
             <div className="relative mb-8 w-full max-w-[525px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
               <button
@@ -449,7 +449,7 @@ export function HostPanel() {
   /* ---- COUNTDOWN ---- */
   if (phase === "countdown" && curQ) {
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="flex min-h-screen flex-col bg-background">
         {header}
         <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
           <span className="rounded-full bg-orange-500 px-6 py-2 text-lg font-bold text-white">
@@ -478,7 +478,7 @@ export function HostPanel() {
     const remainPct = tl > 0 ? (ansTimer / tl) * 100 : 0;
 
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="flex min-h-screen flex-col bg-background">
         {header}
         <main className="flex flex-1 flex-col gap-4 p-6">
           {/* Top row */}
@@ -559,7 +559,7 @@ export function HostPanel() {
   /* ---- RESULTS ---- */
   if (phase === "results" && curQ) {
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="flex min-h-screen flex-col bg-background">
         {header}
         <main className="flex flex-1 flex-col gap-4 p-6">
           {/* Top row */}
@@ -627,7 +627,7 @@ export function HostPanel() {
   if (phase === "scoreboard") {
     const top5 = leaderboard.slice(0, 5);
     return (
-      <div className="min-h-screen bg-[#27bccb]">
+      <div className="min-h-screen bg-background">
         {header}
         <main className="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 pt-9">
           <div className="mb-10 w-full max-w-[650px] rounded-[10px] bg-[#f2f2f2] py-5 text-center shadow-md">
@@ -685,7 +685,7 @@ export function HostPanel() {
     const winner = top3[0];
 
     return (
-      <div className="min-h-screen bg-[#27bccb]">
+      <div className="min-h-screen bg-background">
         {header}
         <main className="mx-auto flex w-full max-w-[1400px] flex-col items-center px-0 pt-4">
 

@@ -9,12 +9,23 @@ import { Input } from "@/src/components/ui/Field";
 import {
   ensureProfile,
   getCurrentUser,
+  getProfileMaybe,
+  isProfileComplete,
   signIn,
   signUp,
 } from "@/src/services/supabase/api";
-import { isSupabaseConfigured } from "@/src/services/supabase/client";
+import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
+import {
+  isSupabaseConfigured,
+  supabaseMissingEnvMessage,
+} from "@/src/services/supabase/client";
 
 type Mode = "signin" | "signup";
+
+function defaultUsernameFromEmail(email: string) {
+  const base = email.split("@")[0]?.trim();
+  return base || `user_${Date.now()}`;
+}
 
 export function AuthPanel() {
   const router = useRouter();
@@ -37,24 +48,28 @@ export function AuthPanel() {
 
   async function handleSubmit() {
     if (!isSupabaseConfigured) {
-      setMessage(
-        "Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY) first.",
-      );
+      setMessage(supabaseMissingEnvMessage);
       return;
     }
     setLoading(true);
     setMessage("");
+    const destination = nextPath || "/dashboard";
+
     try {
       if (mode === "signup") {
-        const { error } = await signUp(email, password);
+        const { data, error } = await signUp(email, password);
         if (error) {
           throw error;
         }
-        const user = await getCurrentUser();
-        if (user && username.trim()) {
-          await ensureProfile(user, username.trim());
+        if (data.session) {
+          const user = await getCurrentUser();
+          if (user) {
+            await ensureProfile(user, defaultUsernameFromEmail(email));
+          }
+          router.push(profileSetupUrl(destination));
+          return;
         }
-        setMessage("Sign-up complete. Verify your email if confirmation is enabled.");
+        setMessage("Check your email to confirm your account, then sign in here.");
         setMode("signin");
       } else {
         const { error } = await signIn(email, password);
@@ -62,10 +77,16 @@ export function AuthPanel() {
           throw error;
         }
         const user = await getCurrentUser();
-        if (user && username.trim()) {
-          await ensureProfile(user, username.trim());
+        if (user) {
+          const uname = username.trim() || defaultUsernameFromEmail(email);
+          await ensureProfile(user, uname);
+          const profile = await getProfileMaybe(user.id);
+          if (!isProfileComplete(profile)) {
+            router.push(profileSetupUrl(destination));
+            return;
+          }
         }
-        router.push(nextPath || "/dashboard");
+        router.push(destination);
       }
     } catch (error) {
       setMessage((error as Error).message);
@@ -123,11 +144,13 @@ export function AuthPanel() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Input
-            placeholder="Username (stored in users table)"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
+          {mode === "signin" && (
+            <Input
+              placeholder="Username (optional; defaults from email)"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          )}
           <Button onClick={handleSubmit} disabled={loading}>
             {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Create Account"}
           </Button>

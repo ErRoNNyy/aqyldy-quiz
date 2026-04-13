@@ -3,8 +3,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import clsx from "clsx";
+import {
+  SiteHeader,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 import {
   getAnswersForQuestion,
   getLeaderboard,
@@ -219,23 +222,15 @@ export function PlayPanel() {
   /* ===================== RENDERING ===================== */
 
   const headerBar = (
-    <header className="flex items-center justify-between bg-orange-500 px-7 py-3">
-      <span className="text-2xl font-bold text-white">Aqyldy quiz</span>
-      <Link
-        href="/"
-        className="rounded-xl bg-cyan-500 px-8 py-2 font-bold text-white transition hover:bg-cyan-600"
-      >
-        Home
-      </Link>
-    </header>
+    <SiteHeader right={<SiteHeaderActionLink href="/">Home</SiteHeaderActionLink>} />
   );
 
   /* ---- LOBBY ---- */
   if (phase === "lobby") {
     return (
-      <div className="min-h-screen bg-[#27b8c9]">
+      <div className="min-h-screen bg-background">
         {headerBar}
-        <main className="flex min-h-[calc(100vh-72px)] px-10 py-8">
+        <main className="flex min-h-[calc(100vh-3.25rem)] px-10 py-8">
           <div className="flex flex-1 flex-col items-center">
             <div className="relative mb-8 w-full max-w-[525px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
               <p className="text-[28px] leading-none text-black">Game CODE</p>
@@ -307,7 +302,7 @@ export function PlayPanel() {
   /* ---- COUNTDOWN ---- */
   if (phase === "countdown" && question) {
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="flex min-h-screen flex-col bg-background">
         {headerBar}
         <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
           <span className="rounded-full bg-orange-500 px-6 py-2 text-lg font-bold text-white">
@@ -336,7 +331,7 @@ export function PlayPanel() {
     const remainPct = tl > 0 ? (ansTimer / tl) * 100 : 0;
 
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="flex min-h-screen flex-col bg-background">
         {headerBar}
         <main className="flex flex-1 flex-col gap-4 p-6">
           {/* Top row */}
@@ -447,7 +442,7 @@ export function PlayPanel() {
         : "Incorrect";
 
     return (
-      <div className="flex min-h-screen flex-col bg-[#27b8c9]">
+      <div className="flex min-h-screen flex-col bg-background">
         {headerBar}
         <main className="flex flex-1 flex-col gap-4 p-6">
           {/* Top row */}
@@ -537,7 +532,7 @@ export function PlayPanel() {
   if (phase === "scoreboard") {
     const top5 = leaderboard.slice(0, 5);
     return (
-      <div className="min-h-screen bg-[#27bccb]">
+      <div className="min-h-screen bg-background">
         {headerBar}
         <main className="mx-auto flex w-full max-w-[1280px] flex-col items-center px-6 pt-9">
           <div className="mb-10 w-full max-w-[650px] rounded-[10px] bg-[#f2f2f2] py-5 text-center shadow-md">
@@ -591,7 +586,7 @@ export function PlayPanel() {
     const myRank = me ? leaderboard.findIndex((p) => p.id === participantId) + 1 : null;
 
     return (
-      <div className="min-h-screen bg-[#27bccb]">
+      <div className="min-h-screen bg-background">
         {headerBar}
         <main className="mx-auto flex w-full max-w-[1400px] flex-col items-center px-0 pt-2">
 

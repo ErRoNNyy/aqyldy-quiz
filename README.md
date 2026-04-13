@@ -26,15 +26,17 @@ Set:
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-3. In Supabase SQL editor, run:
+3. **Email sign-up:** In the Supabase dashboard open **Authentication → Providers → Email** and turn off **Confirm email** if you want accounts to work immediately without a confirmation link.
+
+4. In Supabase SQL editor, run:
 
 - `supabase/schema.sql`
 
-4. In Supabase Storage, create public bucket:
+5. In Supabase Storage, create public bucket:
 
 - `quiz-images`
 
-5. Start app:
+6. Start app:
 
 ```bash
 npm run dev

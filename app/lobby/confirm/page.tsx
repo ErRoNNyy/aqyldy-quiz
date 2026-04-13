@@ -7,7 +7,7 @@ const LobbyConfirm = dynamic(
     import("@/src/features/session/LobbyConfirm").then((m) => m.LobbyConfirm),
   {
     ssr: false,
-    loading: () => <div className="min-h-screen bg-cyan-500" />,
+    loading: () => <div className="min-h-screen bg-background" />,
   },
 );
 

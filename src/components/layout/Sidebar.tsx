@@ -15,7 +15,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex w-48 shrink-0 flex-col gap-1 bg-cyan-500 px-3 py-5">
+    <nav className="flex w-48 shrink-0 flex-col gap-1 border-r border-white/25 bg-background px-3 py-5">
       {navItems.map((item) => (
         <Link
           key={item.id}

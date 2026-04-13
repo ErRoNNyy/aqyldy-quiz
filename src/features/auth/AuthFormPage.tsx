@@ -2,9 +2,24 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import {
+  SiteHeader,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ensureProfile, getCurrentUser, signIn, signUp } from "@/src/services/supabase/api";
-import { isSupabaseConfigured } from "@/src/services/supabase/client";
+import {
+  ensureProfile,
+  getCurrentUser,
+  getProfileMaybe,
+  isProfileComplete,
+  signIn,
+  signUp,
+} from "@/src/services/supabase/api";
+import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
+import {
+  isSupabaseConfigured,
+  supabaseMissingEnvMessage,
+} from "@/src/services/supabase/client";
 
 type AuthMode = "signin" | "signup";
 
@@ -33,9 +48,7 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
 
   async function handleSubmit() {
     if (!isSupabaseConfigured) {
-      setMessage(
-        "Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY) first.",
-      );
+      setMessage(supabaseMissingEnvMessage);
       return;
     }
 
@@ -52,14 +65,25 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
     setLoading(true);
     setMessage("");
 
+    const destination = nextPath || "/home";
+
     try {
       if (isSignUp) {
-        const { error } = await signUp(email.trim(), password);
+        const { data, error } = await signUp(email.trim(), password);
         if (error) {
           throw error;
         }
 
-        setMessage("Account created! Check your email to confirm, then sign in.");
+        if (data.session) {
+          const user = await getCurrentUser();
+          if (user) {
+            await ensureProfile(user, getDefaultUsername(email));
+          }
+          router.push(profileSetupUrl(destination));
+          return;
+        }
+
+        setMessage("Account created. Check your email for a confirmation link, then sign in.");
         setTimeout(() => router.push("/signin"), 2000);
         return;
       }
@@ -72,9 +96,14 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
       const user = await getCurrentUser();
       if (user) {
         await ensureProfile(user, getDefaultUsername(email));
+        const profile = await getProfileMaybe(user.id);
+        if (!isProfileComplete(profile)) {
+          router.push(profileSetupUrl(destination));
+          return;
+        }
       }
 
-      router.push(nextPath || "/home");
+      router.push(destination);
     } catch (error) {
       setMessage((error as Error).message);
     } finally {
@@ -83,20 +112,10 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-cyan-500">
-      <header className="flex items-center justify-between bg-orange-500 px-11 py-2">
-        <Link href="/" className="text-2xl font-semibold text-white">
-          Aqyldy quiz
-        </Link>
-        <Link
-          href="/"
-          className="rounded-md bg-cyan-500 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-600"
-        >
-          Home
-        </Link>
-      </header>
+    <div className="min-h-screen bg-background">
+      <SiteHeader right={<SiteHeaderActionLink href="/">Home</SiteHeaderActionLink>} />
 
-      <main className="mx-auto flex min-h-[calc(100vh-57px)] max-w-3xl items-center justify-center px-6">
+      <main className="mx-auto flex min-h-[calc(100vh-3.25rem)] max-w-3xl items-center justify-center px-6">
         <form
           className="flex w-full max-w-xl flex-col items-center"
           onSubmit={(event) => {
@@ -140,7 +159,7 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
               <p className="text-sm font-semibold text-cyan-100">Forgot password?</p>
               <p className="mt-1 text-sm font-semibold text-cyan-100">
                 <Link href="/signup" className="underline underline-offset-2">
-                Don't have an account?{" "} Sign up
+                  Don&apos;t have an account? Sign up
                 </Link>
               </p>
             </div>

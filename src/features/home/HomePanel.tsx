@@ -8,8 +8,11 @@ import {
   ensureProfile,
   getCurrentUser,
   getMyQuizzes,
+  getProfileMaybe,
   getQuestionCountsForQuizzes,
+  isProfileComplete,
 } from "@/src/services/supabase/api";
+import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
 import type { Quiz } from "@/src/types/models";
 
@@ -27,9 +30,14 @@ export function HomePanel() {
         router.replace("/signin?next=/home");
         return;
       }
-      const name = user.email?.split("@")[0] ?? "user";
-      await ensureProfile(user, name);
-      setUsername(name);
+      const fallback = user.email?.split("@")[0] ?? "user";
+      await ensureProfile(user, fallback);
+      const profile = await getProfileMaybe(user.id);
+      if (!isProfileComplete(profile)) {
+        router.replace(profileSetupUrl("/home"));
+        return;
+      }
+      setUsername(profile?.name ?? profile?.username ?? fallback);
 
       const rows = await getMyQuizzes(user.id);
       setQuizzes(rows);
@@ -43,7 +51,7 @@ export function HomePanel() {
 
   return (
     <AuthenticatedLayout username={username}>
-      <div className="flex-1 bg-cyan-100 p-6">
+      <div className="flex-1 bg-background p-6">
         <h1 className="mb-5 text-xl font-bold text-zinc-800">
           What would you like to do today?
         </h1>

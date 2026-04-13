@@ -6,7 +6,7 @@ const JoinPanel = dynamic(
   () => import("@/src/features/session/JoinPanel").then((module) => module.JoinPanel),
   {
     ssr: false,
-    loading: () => <div className="min-h-screen bg-cyan-500" />,
+    loading: () => <div className="min-h-screen bg-background" />,
   },
 );
 

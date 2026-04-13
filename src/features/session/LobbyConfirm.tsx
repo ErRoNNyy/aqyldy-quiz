@@ -2,8 +2,11 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  SiteHeader,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 import { addParticipant, getCurrentUser } from "@/src/services/supabase/api";
 
 export function LobbyConfirm() {
@@ -39,20 +42,10 @@ export function LobbyConfirm() {
   }
 
   return (
-    <div className="min-h-screen bg-cyan-500">
-      <header className="flex items-center justify-between bg-orange-500 px-6 py-2.5">
-        <Link href="/" className="text-xl font-bold text-white">
-          Aqyldy quiz
-        </Link>
-        <Link
-          href="/"
-          className="rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700"
-        >
-          Home
-        </Link>
-      </header>
+    <div className="min-h-screen bg-background">
+      <SiteHeader right={<SiteHeaderActionLink href="/">Home</SiteHeaderActionLink>} />
 
-      <main className="flex min-h-[calc(100vh-48px)] flex-col items-center justify-center px-6">
+      <main className="flex min-h-[calc(100vh-3.25rem)] flex-col items-center justify-center px-6">
         {/* Avatar card */}
         <div className="mb-6 flex flex-col items-center rounded-xl bg-white px-8 pb-4 pt-5 shadow-lg">
           {avatar && (

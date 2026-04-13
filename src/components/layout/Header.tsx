@@ -4,6 +4,11 @@ import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/src/services/supabase/api";
+import {
+  siteHeaderActionClassName,
+  siteHeaderBarClassName,
+  siteHeaderTitleClassName,
+} from "@/src/components/layout/SiteHeader";
 
 interface HeaderProps {
   username?: string;
@@ -30,15 +35,16 @@ export function Header({ username }: HeaderProps) {
   }
 
   return (
-    <header className="relative z-50 flex items-center justify-between bg-orange-500 px-6 py-2.5">
-      <Link href="/" className="text-2xl font-semibold text-white">
+    <header className={siteHeaderBarClassName}>
+      <Link href="/" className={siteHeaderTitleClassName}>
         Aqyldy quiz
       </Link>
       {username && (
         <div className="relative" ref={menuRef}>
           <button
+            type="button"
             onClick={() => setOpen((v) => !v)}
-            className="rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700"
+            className={siteHeaderActionClassName}
           >
             {username}
           </button>

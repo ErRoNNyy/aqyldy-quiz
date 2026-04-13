@@ -9,8 +9,11 @@ import {
   ensureProfile,
   getCurrentUser,
   getMyQuizzes,
+  getProfileMaybe,
   getQuestionCountsForQuizzes,
+  isProfileComplete,
 } from "@/src/services/supabase/api";
+import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
 import type { Quiz } from "@/src/types/models";
 
@@ -57,9 +60,14 @@ export function DashboardPanel() {
           router.replace("/signin?next=/dashboard");
           return;
         }
-        const name = user.email?.split("@")[0] ?? "user";
-        await ensureProfile(user, name);
-        setUsername(name);
+        const fallback = user.email?.split("@")[0] ?? "user";
+        await ensureProfile(user, fallback);
+        const profile = await getProfileMaybe(user.id);
+        if (!isProfileComplete(profile)) {
+          router.replace(profileSetupUrl("/dashboard"));
+          return;
+        }
+        setUsername(profile?.name ?? profile?.username ?? fallback);
         setUserId(user.id);
         await loadQuizzes(user.id);
       } catch (error) {
@@ -97,7 +105,7 @@ export function DashboardPanel() {
 
   return (
     <AuthenticatedLayout username={username}>
-      <div className="flex-1 bg-cyan-100 p-6">
+      <div className="flex-1 bg-background p-6">
       <div className="mb-5 flex items-center gap-3">
         {filters.map((f) => (
           <button

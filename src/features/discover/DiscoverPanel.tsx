@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AuthenticatedLayout } from "@/src/components/layout/AuthenticatedLayout";
-import { getCurrentUser, ensureProfile } from "@/src/services/supabase/api";
+import {
+  ensureProfile,
+  getCurrentUser,
+  getProfileMaybe,
+  isProfileComplete,
+} from "@/src/services/supabase/api";
+import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
 
 export function DiscoverPanel() {
@@ -18,16 +24,21 @@ export function DiscoverPanel() {
         router.replace("/signin?next=/discover");
         return;
       }
-      const name = user.email?.split("@")[0] ?? "user";
-      await ensureProfile(user, name);
-      setUsername(name);
+      const fallback = user.email?.split("@")[0] ?? "user";
+      await ensureProfile(user, fallback);
+      const profile = await getProfileMaybe(user.id);
+      if (!isProfileComplete(profile)) {
+        router.replace(profileSetupUrl("/discover"));
+        return;
+      }
+      setUsername(profile?.name ?? profile?.username ?? fallback);
     }
     void init();
   }, [router]);
 
   return (
     <AuthenticatedLayout username={username}>
-      <div className="flex flex-1 items-center justify-center bg-cyan-100">
+      <div className="flex flex-1 items-center justify-center bg-background">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-zinc-700">Discover</h1>
           <p className="mt-2 text-sm text-zinc-500">

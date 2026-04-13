@@ -25,6 +25,20 @@ export async function getCurrentUser(): Promise<User | null> {
   return data.user ?? null;
 }
 
+const ALPHANUMERIC_NAME = /^[a-zA-Z0-9]+$/;
+
+export function isProfileComplete(profile: UserProfile | null | undefined): boolean {
+  if (!profile) {
+    return false;
+  }
+  return (
+    !!profile.name &&
+    ALPHANUMERIC_NAME.test(profile.name) &&
+    !!profile.school_organization?.trim() &&
+    !!profile.preferred_language?.trim()
+  );
+}
+
 export async function signUp(email: string, password: string) {
   return supabase.auth.signUp({ email, password });
 }
@@ -51,9 +65,47 @@ export async function ensureProfile(user: User, username: string) {
   const { error } = await supabase.from("users").insert({
     id: user.id,
     username,
+    name: null,
+    school_organization: null,
+    preferred_language: null,
   });
 
   if (error && error.code !== "23505") {
+    throw error;
+  }
+}
+
+export async function completeProfile(
+  userId: string,
+  payload: {
+    name: string;
+    schoolOrganization: string;
+    preferredLanguage: string;
+  },
+) {
+  const name = payload.name.trim();
+  const school = payload.schoolOrganization.trim();
+  const lang = payload.preferredLanguage.trim();
+  if (!name || !ALPHANUMERIC_NAME.test(name)) {
+    throw new Error("Name must contain letters and numbers only.");
+  }
+  if (!school) {
+    throw new Error("School or organization is required.");
+  }
+  if (!lang) {
+    throw new Error("Preferred language is required.");
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({
+      name,
+      school_organization: school,
+      preferred_language: lang,
+    })
+    .eq("id", userId);
+
+  if (error) {
     throw error;
   }
 }
@@ -64,6 +116,18 @@ export async function getProfile(userId: string) {
     .select("*")
     .eq("id", userId)
     .single<UserProfile>();
+  if (error) {
+    throw error;
+  }
+  return data;
+}
+
+export async function getProfileMaybe(userId: string): Promise<UserProfile | null> {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle<UserProfile>();
   if (error) {
     throw error;
   }

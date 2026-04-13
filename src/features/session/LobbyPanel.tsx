@@ -2,9 +2,12 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
+import {
+  SiteHeader,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 
 const AVATARS = [
   { id: "yellow_bear", src: "/avatars_project/yellow_bear.png" },
@@ -57,18 +60,8 @@ export function LobbyPanel() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-cyan-500">
-      <header className="flex items-center justify-between bg-orange-500 px-6 py-2.5">
-        <Link href="/" className="text-xl font-bold text-white">
-          Aqyldy quiz
-        </Link>
-        <Link
-          href="/"
-          className="rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700"
-        >
-          Home
-        </Link>
-      </header>
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader right={<SiteHeaderActionLink href="/">Home</SiteHeaderActionLink>} />
 
       <main className="flex flex-1 items-center justify-center px-6">
         {step === "name" && (

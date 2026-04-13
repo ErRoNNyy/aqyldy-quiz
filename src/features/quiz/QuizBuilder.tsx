@@ -2,10 +2,13 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import clsx from "clsx";
+import {
+  SiteHeader,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 import {
   createQuestion,
   createQuiz,
@@ -15,9 +18,12 @@ import {
   getAnswersByQuestionIds,
   getCurrentUser,
   getMyQuizzes,
+  getProfileMaybe,
   getQuizQuestions,
   updateQuestion,
+  isProfileComplete,
 } from "@/src/services/supabase/api";
+import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
 import type { Answer, Question, Quiz } from "@/src/types/models";
 
@@ -100,6 +106,12 @@ export function QuizBuilder() {
         return;
       }
       await ensureProfile(user, user.email?.split("@")[0] ?? "user");
+      const profile = await getProfileMaybe(user.id);
+      if (!isProfileComplete(profile)) {
+        const q = searchParams.toString();
+        router.replace(profileSetupUrl(`/dashboard/edit${q ? `?${q}` : ""}`));
+        return;
+      }
       setUserId(user.id);
 
       if (queryQuizId) {
@@ -246,17 +258,10 @@ export function QuizBuilder() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#c8e6e8]">
-      {/* HEADER */}
-      <header className="flex items-center justify-between bg-orange-500 px-6 py-2.5">
-        <span className="text-xl font-bold text-white">Aqyldy quiz</span>
-        <Link
-          href="/dashboard"
-          className="rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700"
-        >
-          Exit
-        </Link>
-      </header>
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader
+        right={<SiteHeaderActionLink href="/dashboard">Exit</SiteHeaderActionLink>}
+      />
 
       <div className="flex flex-1">
         {/* LEFT SIDEBAR */}

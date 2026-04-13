@@ -5,6 +5,9 @@ create extension if not exists "uuid-ossp";
 create table if not exists public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   username text not null,
+  name text check (name is null or name ~ '^[a-zA-Z0-9]+$'),
+  school_organization text,
+  preferred_language text,
   created_at timestamptz not null default now()
 );
 

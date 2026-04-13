@@ -5,6 +5,10 @@ export type SessionStatus = "active" | "completed";
 export interface UserProfile {
   id: UUID;
   username: string;
+  /** Letters and digits only when set (enforced in DB). */
+  name: string | null;
+  school_organization: string | null;
+  preferred_language: string | null;
   created_at: string;
 }
 

@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  SiteHeader,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 import { findSessionByCode } from "@/src/services/supabase/api";
-import { isSupabaseConfigured } from "@/src/services/supabase/client";
+import {
+  isSupabaseConfigured,
+  supabaseMissingEnvMessage,
+} from "@/src/services/supabase/client";
 
 export function JoinPanel() {
   const router = useRouter();
@@ -14,7 +20,7 @@ export function JoinPanel() {
 
   async function join() {
     if (!isSupabaseConfigured) {
-      setStatus("Configure Supabase ENV first.");
+      setStatus(supabaseMissingEnvMessage);
       return;
     }
     if (!code.trim()) {
@@ -34,18 +40,8 @@ export function JoinPanel() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-cyan-500">
-      <header className="flex items-center justify-between bg-orange-500 px-6 py-2.5">
-        <Link href="/" className="text-xl font-bold text-white">
-          Aqyldy quiz
-        </Link>
-        <Link
-          href="/"
-          className="rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700"
-        >
-          Home
-        </Link>
-      </header>
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader right={<SiteHeaderActionLink href="/">Home</SiteHeaderActionLink>} />
 
       <main className="flex flex-1 items-center justify-center px-6">
         <form

@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  SiteHeader,
+  SiteHeaderActionLink,
+} from "@/src/components/layout/SiteHeader";
 import { getCurrentUser } from "@/src/services/supabase/api";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
 
@@ -25,24 +29,14 @@ export default function Home() {
   }, [router]);
 
   if (!checked) {
-    return <div className="min-h-screen bg-[#1fb6c4]" />;
+    return <div className="min-h-screen bg-background" />;
   }
 
   return (
-    <div className="min-h-screen bg-[#1fb6c4]">
-      <header className="flex items-center justify-between bg-orange-500 px-11 py-2">
-        <Link href="/" className="text-sm font-semibold text-white">
-          Aqyldy quiz
-        </Link>
-        <Link
-          href="/signin"
-          className="rounded-md bg-cyan-500 px-5 py-1.5 text-xs font-semibold text-white transition hover:bg-cyan-600"
-        >
-          Sign in
-        </Link>
-      </header>
+    <div className="min-h-screen bg-background">
+      <SiteHeader right={<SiteHeaderActionLink href="/signin">Sign in</SiteHeaderActionLink>} />
 
-      <main className="mx-auto flex min-h-[calc(100vh-44px)] max-w-3xl flex-col items-center justify-center px-6">
+      <main className="mx-auto flex min-h-[calc(100vh-3.25rem)] max-w-3xl flex-col items-center justify-center px-6">
         <h1 className="mb-16 text-center text-4xl font-bold text-white">Welcome to Aqyldy quiz!</h1>
         <div className="flex w-full max-w-sm flex-col gap-6">
           <Link
