@@ -52,7 +52,7 @@ export function HomePanel() {
   return (
     <AuthenticatedLayout username={username}>
       <div className="flex-1 bg-background p-6">
-        <h1 className="mb-5 text-xl font-bold text-zinc-800">
+        <h1 className="mb-5 text-xl font-bold text-white">
           What would you like to do today?
         </h1>
 

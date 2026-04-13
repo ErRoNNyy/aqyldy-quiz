@@ -40,8 +40,8 @@ export function ReportsPanel() {
     <AuthenticatedLayout username={username}>
       <div className="flex flex-1 items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-zinc-700">Reports</h1>
-          <p className="mt-2 text-sm text-zinc-500">
+          <h1 className="text-2xl font-bold text-white">Reports</h1>
+          <p className="mt-2 text-sm text-white">
             Session history and analytics will appear here soon.
           </p>
         </div>

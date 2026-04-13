@@ -40,8 +40,8 @@ export function DiscoverPanel() {
     <AuthenticatedLayout username={username}>
       <div className="flex flex-1 items-center justify-center bg-background">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-zinc-700">Discover</h1>
-          <p className="mt-2 text-sm text-zinc-500">
+          <h1 className="text-2xl font-bold text-white">Discover</h1>
+          <p className="mt-2 text-sm text-white">
             Public quizzes from the community will appear here soon.
           </p>
         </div>
