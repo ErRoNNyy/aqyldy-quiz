@@ -21,6 +21,7 @@ import {
   getProfileMaybe,
   getQuizQuestions,
   updateQuestion,
+  updateQuiz,
   isProfileComplete,
 } from "@/src/services/supabase/api";
 import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
@@ -63,6 +64,9 @@ export function QuizBuilder() {
   // null = new question, string = editing existing question id
   const [editingId, setEditingId] = useState<string | null>(null);
   const [quizTitle, setQuizTitle] = useState("");
+  const [titleModalOpen, setTitleModalOpen] = useState(false);
+  const [titleDraft, setTitleDraft] = useState("");
+  const [titleModalError, setTitleModalError] = useState("");
   const [questionText, setQuestionText] = useState("");
   const [questionImage, setQuestionImage] = useState<File | null>(null);
   const [timeLimit, setTimeLimit] = useState(20);
@@ -125,7 +129,56 @@ export function QuizBuilder() {
       }
     }
     void init();
-  }, [loadQuestions, queryQuizId, router]);
+  }, [loadQuestions, queryQuizId, router, searchParams]);
+
+  const displayQuizTitle = quiz?.title?.trim() || quizTitle.trim() || "Untitled quiz";
+
+  function openTitleModal() {
+    setTitleDraft(quiz?.title ?? quizTitle);
+    setTitleModalError("");
+    setTitleModalOpen(true);
+  }
+
+  function closeTitleModal() {
+    setTitleModalOpen(false);
+    setTitleModalError("");
+  }
+
+  async function applyTitleFromModal() {
+    const t = titleDraft.trim();
+    if (!t) {
+      setTitleModalError("Title cannot be empty.");
+      return;
+    }
+    setTitleModalError("");
+    if (!quiz) {
+      setQuizTitle(t);
+      closeTitleModal();
+      setStatus("");
+      return;
+    }
+    setLoading(true);
+    try {
+      const updated = await updateQuiz(quiz.id, { title: t });
+      setQuiz(updated);
+      setQuizTitle(updated.title);
+      closeTitleModal();
+      setStatus("");
+    } catch (e) {
+      setTitleModalError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!titleModalOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeTitleModal();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [titleModalOpen]);
 
   function clearEditor() {
     setEditingId(null);
@@ -186,7 +239,7 @@ export function QuizBuilder() {
 
       if (!activeQuiz) {
         if (!userId || !quizTitle.trim()) {
-          setStatus("Enter a quiz title first.");
+          setStatus("Set the quiz title first (use the edit button next to the title).");
           setLoading(false);
           return;
         }
@@ -267,16 +320,10 @@ export function QuizBuilder() {
         {/* LEFT SIDEBAR */}
         <aside className="flex w-40 flex-col border-r border-cyan-300 bg-[#008f9f]">
           <div className="flex-1 overflow-y-auto p-3">
-            <input
-              value={quizTitle}
-              onChange={(e) => setQuizTitle(e.target.value)}
-              placeholder="Quiz title"
-              className="mb-3 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-xs outline-none focus:border-orange-400"
-            />
-
             <div className="space-y-1">
               {questions.map((q, i) => (
                 <button
+                  type="button"
                   key={q.id}
                   onClick={() => selectQuestion(q)}
                   className={clsx(
@@ -294,6 +341,7 @@ export function QuizBuilder() {
 
           <div className="space-y-2 p-3 pt-0">
             <button
+              type="button"
               onClick={handleSave}
               disabled={loading}
               className="w-full rounded-md bg-cyan-500 py-2 text-xs font-bold text-white transition hover:bg-cyan-600 disabled:opacity-50"
@@ -301,6 +349,7 @@ export function QuizBuilder() {
               Add
             </button>
             <button
+              type="button"
               onClick={handleSave}
               disabled={loading}
               className="w-full rounded-md bg-orange-500 py-2 text-xs font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
@@ -308,6 +357,7 @@ export function QuizBuilder() {
               Save
             </button>
             <button
+              type="button"
               onClick={handlePublish}
               disabled={loading}
               className="w-full rounded-md bg-orange-500 py-2 text-xs font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
@@ -316,6 +366,7 @@ export function QuizBuilder() {
             </button>
             {editingId && (
               <button
+                type="button"
                 onClick={handleDeleteQuestion}
                 disabled={loading}
                 className="w-full rounded-md bg-red-500 py-2 text-xs font-bold text-white transition hover:bg-red-600 disabled:opacity-50"
@@ -328,6 +379,28 @@ export function QuizBuilder() {
 
         {/* MAIN EDITOR */}
         <main className="flex flex-1 flex-col items-center gap-5 p-6">
+          <div className="flex w-full max-w-3xl justify-center">
+            <div className="flex min-w-0 max-w-full items-center gap-1.5">
+              <h1 className="min-w-0 truncate text-lg font-bold text-white sm:text-xl">
+                {displayQuizTitle}
+              </h1>
+              <button
+                type="button"
+                onClick={openTitleModal}
+                aria-label="Edit quiz title"
+                className="shrink-0 p-1.5 text-white transition hover:text-white/80 focus-visible:rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400"
+              >
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
           {/* Question text */}
           <input
             value={questionText}
@@ -459,6 +532,58 @@ export function QuizBuilder() {
           )}
         </main>
       </div>
+
+      {titleModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          role="presentation"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeTitleModal();
+          }}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quiz-title-dialog-label"
+          >
+            <h2 id="quiz-title-dialog-label" className="text-sm font-bold text-zinc-900">
+              Quiz title
+            </h2>
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={(e) => setTitleDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void applyTitleFromModal();
+              }}
+              placeholder="Enter a title"
+              className="mt-3 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-orange-400"
+            />
+            {titleModalError && (
+              <p className="mt-2 text-xs font-medium text-red-600">{titleModalError}</p>
+            )}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeTitleModal}
+                disabled={loading}
+                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void applyTitleFromModal()}
+                disabled={loading}
+                className="rounded-md bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

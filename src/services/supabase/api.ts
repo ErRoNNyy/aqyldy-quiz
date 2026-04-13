@@ -164,6 +164,27 @@ export async function createQuiz(userId: string, title: string, description: str
   return data;
 }
 
+export async function updateQuiz(
+  quizId: string,
+  updates: { title?: string; description?: string | null },
+) {
+  const patch: Record<string, string | null> = {};
+  if (updates.title !== undefined) patch.title = updates.title;
+  if (updates.description !== undefined) patch.description = updates.description;
+
+  const { data, error } = await supabase
+    .from("quizzes")
+    .update(patch)
+    .eq("id", quizId)
+    .select("*")
+    .single<Quiz>();
+
+  if (error) {
+    throw error;
+  }
+  return data;
+}
+
 export async function deleteQuiz(quizId: string) {
   const { error } = await supabase.from("quizzes").delete().eq("id", quizId);
   if (error) {
