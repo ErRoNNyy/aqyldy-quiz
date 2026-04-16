@@ -20,6 +20,7 @@ import {
   getMyQuizzes,
   getProfileMaybe,
   getQuizQuestions,
+  reorderQuestions,
   updateQuestion,
   updateQuiz,
   isProfileComplete,
@@ -71,6 +72,8 @@ export function QuizBuilder() {
   const [questionImage, setQuestionImage] = useState<File | null>(null);
   const [timeLimit, setTimeLimit] = useState(20);
   const [draftAnswers, setDraftAnswers] = useState<DraftAnswer[]>(emptyAnswers());
+  const [reorderOpen, setReorderOpen] = useState(false);
+  const [reorderList, setReorderList] = useState<Question[]>([]);
 
   const onDrop = useCallback((files: File[]) => {
     if (files[0]) setQuestionImage(files[0]);
@@ -310,6 +313,32 @@ export function QuizBuilder() {
     }
   }
 
+  function openReorder() {
+    setReorderList([...questions]);
+    setReorderOpen(true);
+  }
+
+  function moveQuestion(from: number, to: number) {
+    if (to < 0 || to >= reorderList.length) return;
+    const copy = [...reorderList];
+    const [item] = copy.splice(from, 1);
+    copy.splice(to, 0, item);
+    setReorderList(copy);
+  }
+
+  async function saveReorder() {
+    setLoading(true);
+    try {
+      await reorderQuestions(reorderList.map((q) => q.id));
+      setQuestions(reorderList);
+      setReorderOpen(false);
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader
@@ -340,6 +369,15 @@ export function QuizBuilder() {
           </div>
 
           <div className="space-y-2 p-3 pt-0">
+            {questions.length >= 2 && (
+              <button
+                type="button"
+                onClick={openReorder}
+                className="w-full rounded-md bg-yellow-400 py-2 text-xs font-bold text-white transition hover:bg-yellow-600"
+              >
+                Reorder
+              </button>
+            )}
             <button
               type="button"
               onClick={handleSave}
@@ -579,6 +617,70 @@ export function QuizBuilder() {
                 className="rounded-md bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50"
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reorderOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setReorderOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mb-4 text-lg font-bold text-zinc-900">Reorder Questions</h2>
+
+            <div className="max-h-[400px] space-y-2 overflow-y-auto">
+              {reorderList.map((q, i) => (
+                <div
+                  key={q.id}
+                  className="flex items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2"
+                >
+                  <span className="w-6 text-center text-sm font-bold text-zinc-500">{i + 1}</span>
+                  <span className="flex-1 truncate text-sm font-medium text-zinc-800">
+                    {q.text || "Untitled"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => moveQuestion(i, i - 1)}
+                    disabled={i === 0}
+                    className="rounded-md px-2 py-1 text-sm font-bold text-zinc-500 transition hover:bg-zinc-200 disabled:opacity-30"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveQuestion(i, i + 1)}
+                    disabled={i === reorderList.length - 1}
+                    className="rounded-md px-2 py-1 text-sm font-bold text-zinc-500 transition hover:bg-zinc-200 disabled:opacity-30"
+                  >
+                    ▼
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setReorderOpen(false)}
+                className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void saveReorder()}
+                disabled={loading}
+                className="rounded-md bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
+              >
+                {loading ? "Saving..." : "Save Order"}
               </button>
             </div>
           </div>

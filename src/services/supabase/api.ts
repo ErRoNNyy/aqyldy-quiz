@@ -252,12 +252,23 @@ export async function getQuizQuestions(quizId: string) {
     .from("questions")
     .select("*")
     .eq("quiz_id", quizId)
-    .order("id", { ascending: true })
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true })
     .returns<Question[]>();
   if (error) {
     throw error;
   }
   return data;
+}
+
+export async function reorderQuestions(orderedIds: string[]) {
+  for (let i = 0; i < orderedIds.length; i++) {
+    const { error } = await supabase
+      .from("questions")
+      .update({ position: i })
+      .eq("id", orderedIds[i]);
+    if (error) throw error;
+  }
 }
 
 export async function getAnswersByQuestionIds(questionIds: string[]) {

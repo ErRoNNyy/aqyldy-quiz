@@ -26,6 +26,8 @@ export interface Question {
   text: string;
   image_url: string | null;
   time_limit: number;
+  position: number;
+  created_at: string;
 }
 
 export interface Answer {
