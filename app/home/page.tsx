@@ -6,7 +6,7 @@ const HomePanel = dynamic(
   () => import("@/src/features/home/HomePanel").then((m) => m.HomePanel),
   {
     ssr: false,
-    loading: () => <p className="p-6 text-sm">Loading home...</p>,
+    loading: () => <div className="min-h-screen bg-background" />,
   },
 );
 

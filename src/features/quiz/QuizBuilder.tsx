@@ -318,7 +318,7 @@ export function QuizBuilder() {
 
       <div className="flex flex-1">
         {/* LEFT SIDEBAR */}
-        <aside className="flex w-40 flex-col border-r border-cyan-300 bg-[#008f9f]">
+        <aside className="flex w-40 flex-col border-r border-cyan-300 bg-[#1a9eab]">
           <div className="flex-1 overflow-y-auto p-3">
             <div className="space-y-1">
               {questions.map((q, i) => (

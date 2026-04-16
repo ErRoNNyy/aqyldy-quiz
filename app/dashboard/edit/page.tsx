@@ -6,7 +6,7 @@ const QuizBuilder = dynamic(
   () => import("@/src/features/quiz/QuizBuilder").then((m) => m.QuizBuilder),
   {
     ssr: false,
-    loading: () => <p className="p-6 text-sm">Loading editor...</p>,
+    loading: () => <div className="min-h-screen bg-background" />,
   },
 );
 

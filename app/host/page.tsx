@@ -6,7 +6,7 @@ const HostPanel = dynamic(
   () => import("@/src/features/session/HostPanel").then((module) => module.HostPanel),
   {
     ssr: false,
-    loading: () => <p className="mx-auto max-w-3xl text-sm">Loading host...</p>,
+    loading: () => <div className="min-h-screen bg-background" />,
   },
 );
 

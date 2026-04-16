@@ -52,7 +52,9 @@ export function Header({ username }: HeaderProps) {
           {open && (
             <div className="absolute right-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg">
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => {
+                  router.push("/profile");
+                }}
                 className="w-full px-4 py-2.5 text-left text-sm text-zinc-700 transition hover:bg-zinc-100"
               >
                 Profile

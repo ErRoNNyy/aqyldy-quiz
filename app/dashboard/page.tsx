@@ -6,7 +6,7 @@ const DashboardPanel = dynamic(
   () => import("@/src/features/quiz/DashboardPanel").then((m) => m.DashboardPanel),
   {
     ssr: false,
-    loading: () => <p className="p-6 text-sm">Loading dashboard...</p>,
+    loading: () => <div className="min-h-screen bg-background" />,
   },
 );
 

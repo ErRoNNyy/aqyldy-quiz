@@ -6,7 +6,7 @@ const ReportsPanel = dynamic(
   () => import("@/src/features/reports/ReportsPanel").then((m) => m.ReportsPanel),
   {
     ssr: false,
-    loading: () => <p className="p-6 text-sm">Loading reports...</p>,
+    loading: () => <div className="min-h-screen bg-background" />,
   },
 );
 

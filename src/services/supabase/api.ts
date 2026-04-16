@@ -51,6 +51,41 @@ export async function signOut() {
   return supabase.auth.signOut();
 }
 
+export async function updateProfile(
+  userId: string,
+  payload: {
+    name: string;
+    schoolOrganization: string;
+    preferredLanguage: string;
+  },
+) {
+  const name = payload.name.trim();
+  const school = payload.schoolOrganization.trim();
+  const lang = payload.preferredLanguage.trim();
+  if (!name || !ALPHANUMERIC_NAME.test(name)) {
+    throw new Error("Name must contain letters and numbers only.");
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({
+      name,
+      school_organization: school || null,
+      preferred_language: lang || null,
+    })
+    .eq("id", userId);
+  if (error) throw error;
+}
+
+export async function deleteUserAccount(userId: string) {
+  await supabase.from("responses").delete().eq("participant_id", userId);
+  await supabase.from("session_participants").delete().eq("user_id", userId);
+  await supabase.from("sessions").delete().eq("host_id", userId);
+  await supabase.from("quizzes").delete().eq("user_id", userId);
+  await supabase.from("users").delete().eq("id", userId);
+  await supabase.auth.signOut();
+}
+
 export async function ensureProfile(user: User, username: string) {
   const { data: existing } = await supabase
     .from("users")

@@ -1,0 +1,430 @@
+            Kahoot KZ
+            Technical Documentation
+            1. Overview
+            This is a web-based quiz application inspired by Kahoot. Key features include:
+
+               Quiz creation (text + images)
+
+               Drag & drop image upload with auto-resizing and compression
+
+               Live sessions with real-time question delivery
+
+               Real-time leaderboard updates
+
+            Tech Stack:
+
+               Frontend: React JS, Framer Motion, Tailwind CSS, Shadcn/ui, Supabase client
+               (REST + Realtime)
+
+               Database & Storage: Supabase (PostgreSQL + Storage)
+
+               Auth: Supabase Auth (JWT)
+
+               Deployment: Vercel (frontend), Supabase (DB + Storage + Realtime)
+
+
+
+            No Express.js backend is needed: all CRUD, Realtime, and storage operations are
+            handled via Supabase.
+
+
+            2. System Architecture
+
+              [ Client (React, Tailwind, Framer Motion) ]
+                  | Supabase REST + Realtime + Storage
+                  v
+               Supabase DB & Storage
+                  ^
+                  |
+               	Supabase Auth (JWT)
+
+
+            Data Flow
+            1. User signs in → Supabase Auth issues JWT.
+
+            2. Quiz creation → questions + answers saved in Supabase DB.
+
+            3. Image drag & drop → compressed client-side → uploaded directly to
+               Supabase Storage → image URL stored in DB.
+
+            4. Host starts session → insert new row in            sessions   table.
+
+            5. Clients subscribe to   sessions   &   responses   tables via Supabase Realtime
+               channels.
+
+            6. Current question updated → participants see the question and image in real
+               time.
+
+            7. Participants submit answers → insert into            responses   → triggers real-time
+               leaderboard updates.
+
+
+            3. Main Features
+            1. User Authentication
+
+                  Supabase Auth (email/password) or guest mode with nickname
+
+            2. Quiz Creation
+
+                  Create, edit, delete quizzes
+
+                  Add questions with:
+
+                      Text
+
+                      Optional image upload
+
+                      Multiple-choice answers
+
+                  Drag & drop image upload
+
+                  Auto-resizing & compression before upload
+
+
+
+
+	      3. Quiz Hosting
+
+                      Generate session code
+
+                      Control question flow via   sessions.current_question
+
+
+            4. Quiz Participation
+
+                      Join session via code
+
+                      Answer questions with text + image in real time
+
+            5. Results & Leaderboard
+
+                      Live leaderboard updates via Supabase Realtime subscriptions
+
+
+            4. Supabase Database Schema
+            Tables:
+
+               users
+
+                      id (uuid, from Supabase Auth)
+
+                      username
+
+                      created_at
+
+               quizzes
+
+                      id (uuid)
+
+                      user_id → references users.id
+
+                      title, description
+
+                      created_at
+
+               questions
+
+                      id (uuid)
+
+                      quiz_id → references quizzes.id
+
+                      text
+
+                      image_url (nullable, Supabase Storage link)
+
+                      time_limit
+
+
+	     answers
+
+               id (uuid)
+
+               question_id → references questions.id
+
+               text, is_correct
+
+            sessions
+
+               id (uuid)
+
+               quiz_id
+
+               host_id (user_id)
+
+               code (unique join code)
+
+               current_question (question_id, nullable)
+
+               status (active/completed)
+
+               created_at
+
+            session_participants
+
+               id (uuid)
+
+               session_id
+
+               user_id (nullable for guests)
+
+               nickname
+
+               score
+
+            responses
+
+               id (uuid)
+
+               session_id
+
+               participant_id
+
+               question_id
+
+               answer_id
+
+               is_correct
+
+
+
+
+        5. Supabase API & Image Handling
+            Quiz Creation & Images
+               Drag & Drop Image Upload
+
+                    Client-side compression via browser library (optional)
+
+                    Upload directly to Supabase Storage (signed URL)
+
+                    Store   image_url   in   questions   table
+
+            Example Upload Flow:
+
+             import { supabase } from './supabaseClient'
+
+             // Compress image in browser (optional)
+             const file = ... // from dropzone
+             const { data, error } = await supabase.storage
+              .from('quiz-images')
+              .upload(`quiz_${quizId}/${file.name}`, file, { cacheControl: '3600', upsert: tru
+             e })
+
+             const imageUrl = supabase.storage.from('quiz-images').getPublicUrl(data.pat
+             h)
+             await supabase.from('questions').update({ image_url: imageUrl }).eq('id', ques
+             tionId)
+
+
+            CRUD Operations
+               Supabase client handles all CRUD for quizzes, questions, answers, sessions,
+               and responses.
+
+               Row-Level Security (RLS) ensures only owners can edit their quizzes.
+
+
+            6. Supabase Realtime Implementation
+            Frontend Subscriptions
+
+
+
+                                                                                      5
+	         // Subscribe to session question updates
+             supabase
+              .channel(`public:sessions:id=eq.${sessionId}`)
+              .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions'
+             }, payload => {
+                const questionId = payload.new.current_question
+               // fetch question details and image_url
+              })
+              .subscribe()
+
+             // Subscribe to responses for leaderboard
+             supabase
+              .channel(`public:responses:session_id=eq.${sessionId}`)
+              .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'response
+             s' }, payload => {
+               // recalc leaderboard
+              })
+              .subscribe()
+
+            Notes:
+
+               Updating sessions.current_question automatically triggers all participants to see the
+               next question.
+
+               Inserting into   responses   updates the leaderboard in real time.
+
+
+            7. Frontend Architecture
+
+             src/
+              ├─ components/    # UI: buttons, forms, cards, modals
+              ├─ features/   # quiz, sessions, auth
+              ├─ pages/            # route-based screens
+              ├─ hooks/            # custom hooks
+              ├─ services/          # Supabase client + Realtime
+	      ├─ store/             # Zustand/Redux state
+              └─ utils/            # helpers
+
+            Image Upload
+
+               Drag & drop area (react-dropzone or native)
+
+               Preview image before upload
+
+               Optional client-side compression
+
+               Auto-resize (optional) + stored in Supabase Storage
+
+               Use Tailwind + Shadcn/ui for styling, Framer Motion for animations
+
+
+            8. User Stories
+            Authentication
+               Sign up/login via Supabase Auth
+
+               Guest access with nickname
+
+            Quiz Creation
+               Drag & drop images to questions
+
+               Images auto-resized & stored in Supabase Storage
+
+               Preview before saving
+
+               Remove or replace images
+
+            Hosting
+               Generate join code for participants
+
+               Update     current_question   to move quiz forward
+
+            Participation
+               See question text + image instantly
+
+               Submit answers → automatically update leaderboard
+
+
+
+
+	            Results
+              Live leaderboard updates
+
+              Host sees all participant scores
+
+
+
+
+            Supabase-Native Workflow Diagram – Quiz
+            App
+             [ USER (Frontend) ]
+                 |
+                 |   1️⃣ Sign Up / Login
+                 v
+              [ Supabase Auth ]
+                  |
+                  |  2️⃣
+                     JWT issued
+                  v
+             [ Frontend (React + Supabase Client) ]
+                  |
+                  |  3️⃣
+                      Create Quiz / Add Questions
+                  v
+              [ Supabase Database (quizzes, questions, answers) ]
+                  |
+                  |  4️⃣
+                     Drag & Drop Image Upload
+                  v
+              [ Supabase Storage (quiz-images) ]
+                  |
+                  |  5️⃣
+                     Save image_url in questions table
+                  v
+             [ Supabase Database (questions.image_url) ]
+                  |
+                 |   6️⃣ Host Starts Session (insert row in sessions)
+                 v
+
+
+
+	            [ Supabase Database (sessions) ]
+                    |
+                    |  7️⃣
+                     Frontend subscribes to Realtime updates
+                    v
+             [ Supabase Realtime Channels ]
+                  |
+                  |  8️⃣
+                     Update current_question in session
+                   v
+             [ All Participants Frontend ]
+                   |
+                   | 9️⃣Display question + image + answers
+                  v
+             [ PARTICIPANT SUBMITS ANSWER ]
+                  |
+                  |  🔟Insert into responses table
+                  v
+             [ Supabase Database (responses) ]
+                  |
+                   | 1️⃣1️⃣Realtime triggers leaderboard update
+                   v
+             [ All Participants Frontend ]
+                 |
+                 |   1️⃣2️⃣
+                       Show live leaderboard & scores
+                 v
+             [ END SESSION ]
+                 |
+                 |   1️⃣3️⃣ Update session.status = completed
+                 v
+             [ All Participants Frontend ]
+                   |
+                   | Show final leaderboard & results
+
+
+
+
+            Step-by-Step Explanation
+
+
+             1. Sign Up/Login – User authenticates via Supabase Auth (email/password or
+                guest).
+
+             2. JWT Issued – Frontend stores JWT for authenticated requests.
+
+             3. Quiz Creation – User creates quizzes, questions, and multiple-choice answers
+                via Supabase client.
+
+             4. Drag & Drop Image Upload – Image compressed/resized client-side →
+                uploaded directly to Supabase Storage.
+
+             5. Save Image URL – Image URL stored in          questions.image_url   .
+
+             6. Host Starts Session – Insert new row in        sessions   table with join code.
+
+             7. Subscribe to Realtime – All participants subscribe to            sessions   (for
+                current_question ) and responses .
+
+
+             8. Update Current Question – Host moves quiz forward by updating
+                current_question   .
+
+             9. Display Question – Frontend renders question text, image, and options.
+
+            10. Participant Submits Answer – Insert row in          responses   table.
+
+            11. Leaderboard Update – Supabase Realtime broadcasts new response →
+                update frontend leaderboard.
+
+            12. Live Leaderboard – All participants see updated scores instantly.
+
+            13. End Session – Host sets   sessions.status = completed   → triggers final leaderboard
+                display.
+
+
+
+
+            https://www.youtube.com/watch?v=Q4rXmxQ1AUM
+
