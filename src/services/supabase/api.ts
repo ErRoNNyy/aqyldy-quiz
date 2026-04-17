@@ -51,6 +51,28 @@ export async function signOut() {
   return supabase.auth.signOut();
 }
 
+export async function requestPasswordReset(email: string) {
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: false },
+  });
+  if (error) throw error;
+}
+
+export async function verifyPasswordResetOtp(email: string, token: string) {
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: "email",
+  });
+  if (error) throw error;
+}
+
+export async function resetPassword(newPassword: string) {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+}
+
 export async function updateProfile(
   userId: string,
   payload: {

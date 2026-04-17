@@ -196,7 +196,11 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
 
           {!isSignUp && (
             <div className="mt-2 text-center">
-              <p className="text-sm font-semibold text-cyan-100">Forgot password?</p>
+              <p className="text-sm font-semibold text-cyan-100">
+                <Link href="/forgot-password" className="underline underline-offset-2">
+                  Forgot password?
+                </Link>
+              </p>
               <p className="mt-1 text-sm font-semibold text-cyan-100">
                 <Link href="/signup" className="underline underline-offset-2">
                   Don&apos;t have an account? Sign up
