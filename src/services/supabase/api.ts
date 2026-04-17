@@ -315,6 +315,12 @@ export async function createQuestion(quizId: string, payload: CreateQuestionPayl
     imageUrl = await uploadQuestionImage(quizId, payload.imageFile);
   }
 
+  const { count, error: countError } = await supabase
+    .from("questions")
+    .select("*", { count: "exact", head: true })
+    .eq("quiz_id", quizId);
+  if (countError) throw countError;
+
   const { data: question, error: questionError } = await supabase
     .from("questions")
     .insert({
@@ -322,6 +328,7 @@ export async function createQuestion(quizId: string, payload: CreateQuestionPayl
       text: payload.text,
       image_url: imageUrl,
       time_limit: payload.timeLimit,
+      position: count ?? 0,
     })
     .select("*")
     .single<Question>();
@@ -382,6 +389,13 @@ export async function updateQuestion(
 }
 
 export async function deleteQuestion(questionId: string) {
+  const { data: question, error: fetchErr } = await supabase
+    .from("questions")
+    .select("quiz_id")
+    .eq("id", questionId)
+    .single<{ quiz_id: string }>();
+  if (fetchErr) throw fetchErr;
+
   const { error: aErr } = await supabase
     .from("answers")
     .delete()
@@ -393,6 +407,9 @@ export async function deleteQuestion(questionId: string) {
     .delete()
     .eq("id", questionId);
   if (qErr) throw qErr;
+
+  const remaining = await getQuizQuestions(question.quiz_id);
+  await reorderQuestions(remaining.map((q) => q.id));
 }
 
 export async function createSession(quizId: string, hostId: string) {

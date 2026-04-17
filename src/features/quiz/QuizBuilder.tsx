@@ -277,6 +277,56 @@ export function QuizBuilder() {
     }
   }
 
+  async function handleSaveAndExit() {
+    const hasUnsavedQuestion = questionText.trim() || draftAnswers.some((a) => a.text.trim());
+
+    if (hasUnsavedQuestion) {
+      const err = validate();
+      if (err) {
+        setStatus(err);
+        return;
+      }
+
+      setLoading(true);
+      setStatus("");
+      try {
+        let activeQuiz = quiz;
+
+        if (!activeQuiz) {
+          if (!userId || !quizTitle.trim()) {
+            setStatus("Set the quiz title first (use the edit button next to the title).");
+            setLoading(false);
+            return;
+          }
+          activeQuiz = await createQuiz(userId, quizTitle.trim(), "");
+        }
+
+        const payload = {
+          text: questionText.trim(),
+          timeLimit,
+          imageFile: questionImage,
+          answers: draftAnswers
+            .filter((a) => a.text.trim())
+            .map((a) => ({ text: a.text.trim(), isCorrect: a.isCorrect })),
+        };
+
+        if (editingId) {
+          await updateQuestion(editingId, activeQuiz.id, payload);
+        } else {
+          await createQuestion(activeQuiz.id, payload);
+        }
+      } catch (e) {
+        setStatus((e as Error).message);
+        setLoading(false);
+        return;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    router.push("/dashboard");
+  }
+
   async function handleDeleteQuestion() {
     if (!editingId || !quiz) return;
     setLoading(true);
@@ -342,12 +392,45 @@ export function QuizBuilder() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader
+        center={
+          <div className="flex items-center gap-1.5">
+            <span className="truncate text-sm font-bold text-white sm:text-base">
+              {displayQuizTitle}
+            </span>
+            <button
+              type="button"
+              onClick={openTitleModal}
+              aria-label="Edit quiz title"
+              className="shrink-0 p-1 text-white transition hover:text-white/80"
+            >
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125"
+                />
+              </svg>
+            </button>
+          </div>
+        }
         right={<SiteHeaderActionLink href="/dashboard">Exit</SiteHeaderActionLink>}
       />
 
       <div className="flex flex-1">
         {/* LEFT SIDEBAR */}
         <aside className="flex w-40 flex-col border-r border-cyan-300 bg-[#1a9eab]">
+          {questions.length >= 2 && (
+            <div className="p-3 pb-0">
+              <button
+                type="button"
+                onClick={openReorder}
+                className="w-full rounded-md bg-yellow-400 py-2 text-xs font-bold text-white transition hover:bg-yellow-600"
+              >
+                Reorder
+              </button>
+            </div>
+          )}
+
           <div className="flex-1 overflow-y-auto p-3">
             <div className="space-y-1">
               {questions.map((q, i) => (
@@ -369,26 +452,17 @@ export function QuizBuilder() {
           </div>
 
           <div className="space-y-2 p-3 pt-0">
-            {questions.length >= 2 && (
-              <button
-                type="button"
-                onClick={openReorder}
-                className="w-full rounded-md bg-yellow-400 py-2 text-xs font-bold text-white transition hover:bg-yellow-600"
-              >
-                Reorder
-              </button>
-            )}
             <button
               type="button"
               onClick={handleSave}
               disabled={loading}
               className="w-full rounded-md bg-cyan-500 py-2 text-xs font-bold text-white transition hover:bg-cyan-600 disabled:opacity-50"
             >
-              Add
+              {editingId ? "Save" : "Add"}
             </button>
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => void handleSaveAndExit()}
               disabled={loading}
               className="w-full rounded-md bg-orange-500 py-2 text-xs font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
             >
@@ -417,28 +491,6 @@ export function QuizBuilder() {
 
         {/* MAIN EDITOR */}
         <main className="flex flex-1 flex-col items-center gap-5 p-6">
-          <div className="flex w-full max-w-3xl justify-center">
-            <div className="flex min-w-0 max-w-full items-center gap-1.5">
-              <h1 className="min-w-0 truncate text-lg font-bold text-white sm:text-xl">
-                {displayQuizTitle}
-              </h1>
-              <button
-                type="button"
-                onClick={openTitleModal}
-                aria-label="Edit quiz title"
-                className="shrink-0 p-1.5 text-white transition hover:text-white/80 focus-visible:rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-400"
-              >
-                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-
           {/* Question text */}
           <input
             value={questionText}

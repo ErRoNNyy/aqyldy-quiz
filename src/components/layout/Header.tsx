@@ -36,11 +36,14 @@ export function Header({ username }: HeaderProps) {
 
   return (
     <header className={siteHeaderBarClassName}>
-      <Link href="/" className={siteHeaderTitleClassName}>
-        Aqyldy quiz
-      </Link>
-      {username && (
-        <div className="relative" ref={menuRef}>
+      <div className="justify-self-start">
+        <Link href="/" className={siteHeaderTitleClassName}>
+          Aqyldy quiz
+        </Link>
+      </div>
+      <div />
+      {username ? (
+        <div className="relative justify-self-end" ref={menuRef}>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
@@ -53,6 +56,7 @@ export function Header({ username }: HeaderProps) {
             <div className="absolute right-0 top-full z-50 mt-1 w-36 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg">
               <button
                 onClick={() => {
+                  setOpen(false);
                   router.push("/profile");
                 }}
                 className="w-full px-4 py-2.5 text-left text-sm text-zinc-700 transition hover:bg-zinc-100"
@@ -68,6 +72,8 @@ export function Header({ username }: HeaderProps) {
             </div>
           )}
         </div>
+      ) : (
+        <div />
       )}
     </header>
   );

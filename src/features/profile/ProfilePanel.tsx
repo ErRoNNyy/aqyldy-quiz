@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   SiteHeader,
@@ -26,6 +26,8 @@ const LANGUAGES = [
 
 export function ProfilePanel() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next");
 
   const [userId, setUserId] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -75,7 +77,8 @@ export function ProfilePanel() {
         schoolOrganization: school.trim(),
         preferredLanguage: language.trim(),
       });
-      setMessage("Profile saved!");
+      router.push(nextPath || "/home");
+      return;
     } catch (e) {
       setMessage((e as Error).message);
     } finally {
