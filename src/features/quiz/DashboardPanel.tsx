@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { AuthenticatedLayout } from "@/src/components/layout/AuthenticatedLayout";
 import {
+  createSession,
   deleteQuiz,
   ensureProfile,
   getActiveHostedQuizIds,
@@ -40,6 +41,7 @@ export function DashboardPanel() {
   const [activeHostedQuizIds, setActiveHostedQuizIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(false);
+  const [hostingQuizId, setHostingQuizId] = useState<string | null>(null);
   const [status, setStatus] = useState("");
 
   const loadQuizzes = useCallback(async (uid: string) => {
@@ -102,6 +104,20 @@ export function DashboardPanel() {
       setStatus((error as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleHost(quizId: string) {
+    if (!userId) return;
+    setHostingQuizId(quizId);
+    setStatus("");
+    try {
+      const session = await createSession(quizId, userId);
+      router.push(`/host?session=${session.id}`);
+    } catch (error) {
+      setStatus((error as Error).message);
+    } finally {
+      setHostingQuizId(null);
     }
   }
 
@@ -182,19 +198,19 @@ export function DashboardPanel() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => router.push(`/host?quiz=${quiz.id}`)}
+                    onClick={() => void handleHost(quiz.id)}
                     className={clsx(
                       "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition",
                       isDraft
                         ? "border border-zinc-300 bg-white text-zinc-400"
                         : "bg-orange-500 text-white hover:bg-orange-600",
                     )}
-                    disabled={isDraft}
+                    disabled={isDraft || hostingQuizId === quiz.id}
                   >
                     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
                     </svg>
-                    Host
+                    {hostingQuizId === quiz.id ? "Hosting..." : "Host"}
                   </button>
                   <button
                     type="button"

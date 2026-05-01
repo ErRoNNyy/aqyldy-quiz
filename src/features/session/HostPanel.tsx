@@ -67,6 +67,7 @@ export function HostPanel() {
   const [qIdx, setQIdx] = useState(-1);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const [waitSec, setWaitSec] = useState(0);
   const waitRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -139,37 +140,43 @@ export function HostPanel() {
 
   useEffect(() => {
     async function init() {
+      setInitializing(true);
       if (!isSupabaseConfigured) {
         setStatus("Configure Supabase ENV first.");
+        setInitializing(false);
         return;
       }
-      const user = await getCurrentUser();
-      if (!user) {
-        router.replace("/signin?next=/host");
-        return;
-      }
-      await ensureProfile(user, user.email?.split("@")[0] ?? "host");
-      const profile = await getProfileMaybe(user.id);
-      if (!isProfileComplete(profile)) {
-        const qs = new URLSearchParams();
-        if (queryQuizId) qs.set("quiz", queryQuizId);
-        if (querySessionId) qs.set("session", querySessionId);
-        const suffix = qs.toString() ? `?${qs.toString()}` : "";
-        router.replace(profileSetupUrl(`/host${suffix}`));
-        return;
-      }
-      setHostId(user.id);
-      const rows = await getMyQuizzes(user.id);
-      setQuizzes(rows);
-      if (!selectedQuizId && rows[0]) setSelectedQuizId(rows[0].id);
-      if (querySessionId) {
-        const ex = await getSession(querySessionId);
-        if (ex?.status === "active") {
-          setSession(ex);
-          setSelectedQuizId(ex.quiz_id);
-          setQuestions(await getQuizQuestions(ex.quiz_id));
-          setParticipants(await getSessionParticipants(ex.id));
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          router.replace("/signin?next=/host");
+          return;
         }
+        await ensureProfile(user, user.email?.split("@")[0] ?? "host");
+        const profile = await getProfileMaybe(user.id);
+        if (!isProfileComplete(profile)) {
+          const qs = new URLSearchParams();
+          if (queryQuizId) qs.set("quiz", queryQuizId);
+          if (querySessionId) qs.set("session", querySessionId);
+          const suffix = qs.toString() ? `?${qs.toString()}` : "";
+          router.replace(profileSetupUrl(`/host${suffix}`));
+          return;
+        }
+        setHostId(user.id);
+        const rows = await getMyQuizzes(user.id);
+        setQuizzes(rows);
+        if (!selectedQuizId && rows[0]) setSelectedQuizId(rows[0].id);
+        if (querySessionId) {
+          const ex = await getSession(querySessionId);
+          if (ex?.status === "active") {
+            setSession(ex);
+            setSelectedQuizId(ex.quiz_id);
+            setQuestions(await getQuizQuestions(ex.quiz_id));
+            setParticipants(await getSessionParticipants(ex.id));
+          }
+        }
+      } finally {
+        setInitializing(false);
       }
     }
     void init();
@@ -304,6 +311,9 @@ export function HostPanel() {
   /* ===================== RENDERING ===================== */
 
   if (!session) {
+    if (querySessionId && initializing) {
+      return null;
+    }
     return (
       <div className="flex min-h-screen flex-col bg-background">
         <SiteHeader right={<SiteHeaderActionLink href="/home">Exit</SiteHeaderActionLink>} />

@@ -130,7 +130,7 @@ export function HomePanel() {
                     </h3>
                     <p className="mt-1 text-xs text-zinc-500">Learn something new every day with our tools and quizzes</p>
                     <Link
-                      href={isDraft ? `/dashboard/edit?quiz=${quiz.id}` : `/host?quiz=${quiz.id}`}
+                      href={`/dashboard/edit?quiz=${quiz.id}`}
                       className="mt-2 inline-block rounded-full bg-orange-500 px-4 py-1 text-xs font-semibold text-white transition hover:bg-orange-600"
                     >
                       Continue
