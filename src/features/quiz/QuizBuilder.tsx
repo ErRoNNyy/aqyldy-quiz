@@ -65,9 +65,6 @@ export function QuizBuilder() {
   // null = new question, string = editing existing question id
   const [editingId, setEditingId] = useState<string | null>(null);
   const [quizTitle, setQuizTitle] = useState("");
-  const [titleModalOpen, setTitleModalOpen] = useState(false);
-  const [titleDraft, setTitleDraft] = useState("");
-  const [titleModalError, setTitleModalError] = useState("");
   const [questionText, setQuestionText] = useState("");
   const [questionImage, setQuestionImage] = useState<File | null>(null);
   const [timeLimit, setTimeLimit] = useState(20);
@@ -134,54 +131,6 @@ export function QuizBuilder() {
     void init();
   }, [loadQuestions, queryQuizId, router, searchParams]);
 
-  const displayQuizTitle = quiz?.title?.trim() || quizTitle.trim() || "Untitled quiz";
-
-  function openTitleModal() {
-    setTitleDraft(quiz?.title ?? quizTitle);
-    setTitleModalError("");
-    setTitleModalOpen(true);
-  }
-
-  function closeTitleModal() {
-    setTitleModalOpen(false);
-    setTitleModalError("");
-  }
-
-  async function applyTitleFromModal() {
-    const t = titleDraft.trim();
-    if (!t) {
-      setTitleModalError("Title cannot be empty.");
-      return;
-    }
-    setTitleModalError("");
-    if (!quiz) {
-      setQuizTitle(t);
-      closeTitleModal();
-      setStatus("");
-      return;
-    }
-    setLoading(true);
-    try {
-      const updated = await updateQuiz(quiz.id, { title: t });
-      setQuiz(updated);
-      setQuizTitle(updated.title);
-      closeTitleModal();
-      setStatus("");
-    } catch (e) {
-      setTitleModalError((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (!titleModalOpen) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") closeTitleModal();
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [titleModalOpen]);
 
   function clearEditor() {
     setEditingId(null);
@@ -392,27 +341,6 @@ export function QuizBuilder() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader
-        center={
-          <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-bold text-white sm:text-base">
-              {displayQuizTitle}
-            </span>
-            <button
-              type="button"
-              onClick={openTitleModal}
-              aria-label="Edit quiz title"
-              className="shrink-0 p-1 text-white transition hover:text-white/80"
-            >
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125"
-                />
-              </svg>
-            </button>
-          </div>
-        }
         right={<SiteHeaderActionLink href="/dashboard">Exit</SiteHeaderActionLink>}
       />
 
@@ -491,6 +419,33 @@ export function QuizBuilder() {
 
         {/* MAIN EDITOR */}
         <main className="flex flex-1 flex-col items-center gap-5 p-6">
+          {/* Quiz title */}
+          <div className="w-full max-w-3xl">
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-white/90">
+              Quiz title
+            </label>
+            <input
+              value={quiz?.title ?? quizTitle}
+              onChange={(e) => {
+                const v = e.target.value;
+                setQuizTitle(v);
+                if (quiz) setQuiz({ ...quiz, title: v });
+              }}
+              onBlur={async () => {
+                const t = (quiz?.title ?? quizTitle).trim();
+                if (!t || !quiz) return;
+                try {
+                  await updateQuiz(quiz.id, { title: t });
+                } catch {}
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+              }}
+              placeholder="Enter quiz title..."
+              className="w-full rounded-md border border-zinc-200 bg-white px-5 py-3 text-center text-lg font-bold text-zinc-800 outline-none transition-colors placeholder:text-zinc-400 focus:border-orange-400"
+            />
+          </div>
+
           {/* Question text */}
           <input
             value={questionText}
@@ -622,58 +577,6 @@ export function QuizBuilder() {
           )}
         </main>
       </div>
-
-      {titleModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          role="presentation"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeTitleModal();
-          }}
-        >
-          <div
-            className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-5 shadow-lg"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="quiz-title-dialog-label"
-          >
-            <h2 id="quiz-title-dialog-label" className="text-sm font-bold text-zinc-900">
-              Quiz title
-            </h2>
-            <input
-              autoFocus
-              value={titleDraft}
-              onChange={(e) => setTitleDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") void applyTitleFromModal();
-              }}
-              placeholder="Enter a title"
-              className="mt-3 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-orange-400"
-            />
-            {titleModalError && (
-              <p className="mt-2 text-xs font-medium text-red-600">{titleModalError}</p>
-            )}
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={closeTitleModal}
-                disabled={loading}
-                className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => void applyTitleFromModal()}
-                disabled={loading}
-                className="rounded-md bg-orange-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {reorderOpen && (
         <div
