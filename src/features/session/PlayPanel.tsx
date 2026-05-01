@@ -579,21 +579,27 @@ export function PlayPanel() {
     const top3 = leaderboard.slice(0, 3);
     const podiumOrder = [top3[1], top3[0], top3[2]];
     const podiumConfig = [
-      { place: 2, medal: "/places/silver_2.png", height: "h-[345px]", width: "w-[265px]", medalSize: "h-[108px] w-[108px]", avatarSize: "h-[112px] w-[112px]" },
+      { place: 2, medal: "/places/silver_2.png", height: "h-[345px]", width: "w-[265px]", medalSize: "h-[92px] w-[92px]", avatarSize: "h-[122px] w-[122px]" },
       { place: 1, medal: "/places/gold 1.png", height: "h-[445px]", width: "w-[265px]", medalSize: "h-[92px] w-[92px]", avatarSize: "h-[142px] w-[142px]" },
-      { place: 3, medal: "/places/bronze_3.png", height: "h-[270px]", width: "w-[265px]", medalSize: "h-[108px] w-[108px]", avatarSize: "h-[112px] w-[112px]" },
+      { place: 3, medal: "/places/bronze_3.png", height: "h-[270px]", width: "w-[265px]", medalSize: "h-[88px] w-[88px]", avatarSize: "h-[140px] w-[140px]" },
     ];
-
     const me = participantId ? leaderboard.find((p) => p.id === participantId) : null;
     const myRank = me ? leaderboard.findIndex((p) => p.id === participantId) + 1 : null;
+    const winner = top3[0];
 
     return (
       <div className="min-h-screen bg-background">
         {headerBar}
-        <main className="mx-auto flex w-full max-w-[1400px] flex-col items-center px-0 pt-2">
+        <main className="mx-auto flex w-full max-w-[1400px] flex-col items-center px-0 pt-4">
 
           <div className="mb-8 w-full max-w-[1070px] rounded-[12px] bg-[#f2f2f2] py-5 text-center shadow-md">
             <h2 className="text-[30px] font-medium text-[#1f1f1f]">Quiz Complete</h2>
+          </div>
+
+          <div className="mb-6 rounded-[12px] bg-[#f2f2f2] px-10 py-4 text-center shadow-md">
+            <p className="text-[28px] font-medium text-[#1f1f1f]">
+              {winner ? `${winner.nickname} wins with ${winner.score} points!` : "Final results"}
+            </p>
           </div>
 
           {me && myRank && (
@@ -604,7 +610,7 @@ export function PlayPanel() {
             </div>
           )}
 
-          <div className="mb-[30px] flex w-full items-end justify-center gap-5">
+          <div className="mb-[30px] flex w-full items-end justify-center gap-12">
             {podiumOrder.map((entry, i) => {
               const cfg = podiumConfig[i];
               if (!entry) return <div key={i} className={cfg.width} />;
@@ -614,9 +620,17 @@ export function PlayPanel() {
                     <p className="text-[22px] font-medium text-[#1f1f1f]">{entry.nickname}</p>
                   </div>
                   <div className={`flex ${cfg.width} ${cfg.height} flex-col items-center bg-[#5b9faa] px-6 pt-6 shadow-[8px_8px_0_rgba(0,0,0,0.08)]`}>
-                    <div className={`mb-5 overflow-hidden bg-white ${cfg.avatarSize}`}>
+                    <div className={`mb-5 overflow-hidden rounded-lg bg-white ${cfg.avatarSize}`}>
                       {entry.avatar_url ? (
-                        <img src={entry.avatar_url} alt={entry.nickname} className="h-full w-full object-cover" />
+                        <img
+                          src={entry.avatar_url}
+                          alt={entry.nickname}
+                          className={
+                            cfg.place === 3
+                              ? "h-full w-full scale-125 object-cover object-center"
+                              : "h-full w-full object-contain"
+                          }
+                        />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-[#e5e5e5] text-3xl font-bold text-zinc-500">
                           {entry.nickname?.[0]?.toUpperCase() ?? "?"}
@@ -624,7 +638,7 @@ export function PlayPanel() {
                       )}
                     </div>
                     <img src={cfg.medal} alt={`Place ${cfg.place}`} className={`${cfg.medalSize} object-contain`} />
-                    <p className="mt-5 text-[32px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>  
+                    <p className="mb-6 mt-3 text-[32px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>
                   </div>
                 </div>
               );
