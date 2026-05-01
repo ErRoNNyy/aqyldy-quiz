@@ -222,7 +222,7 @@ export function PlayPanel() {
   /* ===================== RENDERING ===================== */
 
   const headerBar = (
-    <SiteHeader right={<SiteHeaderActionLink href="/">Home</SiteHeaderActionLink>} />
+    <SiteHeader right={<SiteHeaderActionLink href="/">Exit</SiteHeaderActionLink>} />
   );
 
   /* ---- LOBBY ---- */
@@ -316,7 +316,7 @@ export function PlayPanel() {
               src={question.image_url}
               alt=""
               className="rounded-xl"
-              style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
+              style={{ maxWidth: 500, maxHeight: 500, objectFit: "contain" }}
             />
           )}
           <CountdownBar key={question.id} duration={3000} />
@@ -335,19 +335,21 @@ export function PlayPanel() {
         {headerBar}
         <main className="flex flex-1 flex-col gap-4 p-6">
           {/* Top row */}
-          <div className="flex w-full items-start justify-between gap-4">
+          <div className="flex w-full items-start gap-4">
             {/* Left: participant count */}
-            <div className="flex items-center gap-2 rounded-lg bg-cyan-600/50 px-4 py-2">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
-              <span className="text-base font-bold text-white">
-                {participants.length}
-              </span>
+            <div className="flex w-44 shrink-0">
+              <div className="flex items-center gap-2 rounded-lg bg-cyan-600/50 px-4 py-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <span className="text-base font-bold text-white">
+                  {participants.length}
+                </span>
+              </div>
             </div>
 
             {/* Center: question card + progress bar */}
-            <div className="flex min-w-0 flex-1 flex-col items-center px-4">
+            <div className="flex min-w-0 flex-1 flex-col items-center">
               <div className="w-full max-w-2xl rounded-xl bg-white px-6 py-4 text-center shadow-lg">
                 <p className="text-xl font-bold text-zinc-800">
                   {question.text}
@@ -362,7 +364,7 @@ export function PlayPanel() {
             </div>
 
             {/* Right: question badge + timer */}
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex w-44 shrink-0 flex-col items-end gap-2">
               <span className="rounded-lg bg-cyan-600/50 px-4 py-2 text-sm font-bold text-white">
                 Get Ready!
               </span>
@@ -379,7 +381,7 @@ export function PlayPanel() {
                 src={question.image_url}
                 alt=""
                 className="rounded-xl"
-                style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
+                style={{ maxWidth: 500, maxHeight: 500, objectFit: "contain" }}
               />
             </div>
           )}

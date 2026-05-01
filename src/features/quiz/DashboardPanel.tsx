@@ -7,6 +7,7 @@ import { AuthenticatedLayout } from "@/src/components/layout/AuthenticatedLayout
 import {
   deleteQuiz,
   ensureProfile,
+  getActiveHostedQuizIds,
   getCurrentUser,
   getMyQuizzes,
   getProfileMaybe,
@@ -36,6 +37,7 @@ export function DashboardPanel() {
   const [userId, setUserId] = useState<string | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
+  const [activeHostedQuizIds, setActiveHostedQuizIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
@@ -43,6 +45,8 @@ export function DashboardPanel() {
   const loadQuizzes = useCallback(async (uid: string) => {
     const rows = await getMyQuizzes(uid);
     setQuizzes(rows);
+    const activeIds = await getActiveHostedQuizIds(uid);
+    setActiveHostedQuizIds(activeIds);
     const ids = rows.map((q) => q.id);
     const counts = await getQuestionCountsForQuizzes(ids);
     setQuestionCounts(counts);
@@ -77,9 +81,13 @@ export function DashboardPanel() {
     void init();
   }, [loadQuizzes, router]);
 
+  const activeHostedQuizSet = new Set(activeHostedQuizIds);
   const filteredQuizzes = quizzes.filter((quiz) => {
     if (filter === "draft") {
       return (questionCounts[quiz.id] ?? 0) === 0;
+    }
+    if (filter === "not_hosted") {
+      return !activeHostedQuizSet.has(quiz.id);
     }
     return true;
   });
@@ -131,6 +139,13 @@ export function DashboardPanel() {
         {filteredQuizzes.map((quiz) => {
           const count = questionCounts[quiz.id] ?? 0;
           const isDraft = count === 0;
+          const isHosted = activeHostedQuizSet.has(quiz.id);
+          const quizStatus = isDraft ? "Draft" : isHosted ? "Hosted" : "Not hosted";
+          const statusClassName = isDraft
+            ? "text-red-500"
+            : isHosted
+              ? "text-emerald-600"
+              : "text-zinc-500";
 
           return (
             <div
@@ -146,11 +161,9 @@ export function DashboardPanel() {
               <div className="flex flex-1 flex-col">
                 <div className="flex items-start justify-between">
                   <h3 className="text-base font-bold text-zinc-900">{quiz.title}</h3>
-                  {isDraft && (
-                    <span className="rounded bg-orange-100 px-2.5 py-0.5 text-xs font-semibold text-orange-600">
-                      DRAFT
-                    </span>
-                  )}
+                  <span className={clsx("text-sm font-bold", statusClassName)}>
+                    {quizStatus}
+                  </span>
                 </div>
                 <p className="mt-0.5 text-xs text-zinc-500">
                   {count} question{count !== 1 ? "s" : ""} | Updated {timeAgo(quiz.created_at)}

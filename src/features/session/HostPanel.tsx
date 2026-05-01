@@ -256,11 +256,6 @@ export function HostPanel() {
     if (waitRef.current) clearInterval(waitRef.current);
   }
 
-  async function handleSkip() {
-    if (!session) return;
-    await advance();
-  }
-
   async function advance() {
     if (!session) return;
     const next = qIdx + 1;
@@ -311,7 +306,7 @@ export function HostPanel() {
   if (!session) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
-        <SiteHeader right={<SiteHeaderActionLink href="/home">Home</SiteHeaderActionLink>} />
+        <SiteHeader right={<SiteHeaderActionLink href="/home">Exit</SiteHeaderActionLink>} />
         <main className="flex flex-1 flex-col items-center justify-center gap-5 px-6">
           <h1 className="text-2xl font-bold text-white">Host a Quiz</h1>
           <select
@@ -346,7 +341,7 @@ export function HostPanel() {
     <SiteHeader
       onBrandClick={() => void handleLeave("/")}
       right={
-        <SiteHeaderActionButton onClick={() => void handleLeave("/home")}>Home</SiteHeaderActionButton>
+        <SiteHeaderActionButton onClick={() => void handleLeave("/home")}>Exit</SiteHeaderActionButton>
       }
     />
   );
@@ -463,7 +458,7 @@ export function HostPanel() {
               src={curQ.image_url}
               alt=""
               className="rounded-xl"
-              style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
+              style={{ maxWidth: 500, maxHeight: 500, objectFit: "contain" }}
             />
           )}
           <CountdownBar key={qIdx} duration={3000} />
@@ -482,9 +477,9 @@ export function HostPanel() {
         {header}
         <main className="flex flex-1 flex-col gap-4 p-6">
           {/* Top row */}
-          <div className="flex w-full items-start justify-between gap-4">
-            {/* Left: participant count + skip */}
-            <div className="flex flex-col gap-2">
+          <div className="flex w-full items-start gap-4">
+            {/* Left: participant count */}
+            <div className="flex w-44 shrink-0">
               <div className="flex items-center gap-2 rounded-lg bg-cyan-600/50 px-4 py-2">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -493,16 +488,10 @@ export function HostPanel() {
                   {respCount}/{participants.length}
                 </span>
               </div>
-              <button
-                onClick={handleSkip}
-                className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
-              >
-                Skip &rarr;
-              </button>
             </div>
 
             {/* Center: question card + progress bar */}
-            <div className="flex min-w-0 flex-1 flex-col items-center px-4">
+            <div className="flex min-w-0 flex-1 flex-col items-center">
               <div className="w-full max-w-2xl rounded-xl bg-white px-6 py-4 text-center shadow-lg">
                 <p className="text-xl font-bold text-zinc-800">{curQ.text}</p>
               </div>
@@ -515,7 +504,7 @@ export function HostPanel() {
             </div>
 
             {/* Right: question badge + timer */}
-            <div className="flex flex-col items-end gap-2">
+            <div className="flex w-44 shrink-0 flex-col items-end gap-2">
               <span className="rounded-lg bg-cyan-600/50 px-4 py-2 text-sm font-bold text-white">
                 Question {qIdx + 1} of {questions.length}
               </span>
@@ -532,7 +521,7 @@ export function HostPanel() {
                 src={curQ.image_url}
                 alt=""
                 className="rounded-xl"
-                style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
+                style={{ maxWidth: 500, maxHeight: 500, objectFit: "contain" }}
               />
             </div>
           )}
@@ -591,7 +580,7 @@ export function HostPanel() {
                 src={curQ.image_url}
                 alt=""
                 className="rounded-xl"
-                style={{ maxWidth: 746, maxHeight: 465, objectFit: "contain" }}
+                style={{ maxWidth: 500, maxHeight: 500, objectFit: "contain" }}
               />
             </div>
           )}
@@ -677,11 +666,10 @@ export function HostPanel() {
     const top3 = leaderboard.slice(0, 3);
     const podiumOrder = [top3[1], top3[0], top3[2]];
     const podiumConfig = [
-      { place: 2, medal: "/places/silver_2.png", height: "h-[345px]", width: "w-[265px]", medalSize: "h-[108px] w-[108px]", avatarSize: "h-[112px] w-[112px]" },
+      { place: 2, medal: "/places/silver_2.png", height: "h-[345px]", width: "w-[265px]", medalSize: "h-[92px] w-[92px]", avatarSize: "h-[122px] w-[122px]" },
       { place: 1, medal: "/places/gold 1.png", height: "h-[445px]", width: "w-[265px]", medalSize: "h-[92px] w-[92px]", avatarSize: "h-[142px] w-[142px]" },
-      { place: 3, medal: "/places/bronze_3.png", height: "h-[270px]", width: "w-[265px]", medalSize: "h-[108px] w-[108px]", avatarSize: "h-[112px] w-[112px]" },
+      { place: 3, medal: "/places/bronze_3.png", height: "h-[270px]", width: "w-[265px]", medalSize: "h-[88px] w-[88px]", avatarSize: "h-[140px] w-[140px]" },
     ];
-    const totalQ = questions.length;
     const winner = top3[0];
 
     return (
@@ -701,20 +689,27 @@ export function HostPanel() {
             </p>
           </div>
 
-          <div className="mb-[30px] flex w-full items-end justify-center">
+          <div className="mb-[30px] flex w-full items-end justify-center gap-12">
             {podiumOrder.map((entry, i) => {
               const cfg = podiumConfig[i];
               if (!entry) return <div key={i} className={cfg.width} />;
-              const correct = correctMap[entry.id] ?? 0;
               return (
                 <div key={entry.id} className="flex flex-col items-center">
                   <div className="mb-3 rounded-[10px] bg-[#f2f2f2] px-8 py-2.5 shadow-md">
                     <p className="text-[22px] font-medium text-[#1f1f1f]">{entry.nickname}</p>
                   </div>
                   <div className={`flex ${cfg.width} ${cfg.height} flex-col items-center bg-[#5b9faa] px-6 pt-6 shadow-[8px_8px_0_rgba(0,0,0,0.08)]`}>
-                    <div className={`mb-5 overflow-hidden bg-white ${cfg.avatarSize}`}>
+                    <div className={`mb-5 overflow-hidden rounded-lg bg-white ${cfg.avatarSize}`}>
                       {entry.avatar_url ? (
-                        <img src={entry.avatar_url} alt={entry.nickname} className="h-full w-full object-cover" />
+                        <img
+                          src={entry.avatar_url}
+                          alt={entry.nickname}
+                          className={
+                            cfg.place === 3
+                              ? "h-full w-full scale-125 object-cover object-center"
+                              : "h-full w-full object-contain"
+                          }
+                        />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center bg-[#e5e5e5] text-3xl font-bold text-zinc-500">
                           {entry.nickname?.[0]?.toUpperCase() ?? "?"}
@@ -722,10 +717,7 @@ export function HostPanel() {
                       )}
                     </div>
                     <img src={cfg.medal} alt={`Place ${cfg.place}`} className={`${cfg.medalSize} object-contain`} />
-                    <p className="mt-5 text-[32px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>
-                    <p className="mt-3 text-center text-[20px] font-bold leading-none text-white drop-shadow-sm">
-                      {correct} out of {totalQ}
-                    </p>
+                    <p className="mb-6 mt-3 text-[32px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>
                   </div>
                 </div>
               );
