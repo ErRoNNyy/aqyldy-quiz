@@ -421,7 +421,7 @@ export function QuizBuilder() {
         <main className="flex flex-1 flex-col items-center gap-5 p-6">
           {/* Quiz title */}
           <div className="w-full max-w-3xl">
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-white/90">
+            <label className="mb-1.5 block text-xs font-semibold tracking-wide text-white/90">
               Quiz title
             </label>
             <input
@@ -477,7 +477,7 @@ export function QuizBuilder() {
           </div>
 
           {/* Time limit */}
-          <div className="flex items-center gap-2 text-xs text-zinc-600">
+          <div className="flex items-center gap-2 text-xs text-white">
             <span>Time:</span>
             <input
               type="number"
