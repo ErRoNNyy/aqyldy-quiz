@@ -129,7 +129,7 @@ export function DashboardPanel() {
 
   return (
     <AuthenticatedLayout username={username}>
-      <div className="flex-1 bg-background p-6">
+      <div className="flex-1 bg-[#E0EFF0] p-6">
       <div className="mb-5 flex max-w-md gap-3">
         {filters.map((f) => (
           <button
@@ -231,7 +231,7 @@ export function DashboardPanel() {
       </div>
 
       {filteredQuizzes.length === 0 && (
-        <p className="mt-10 text-center text-sm text-white">
+        <p className="mt-10 text-center text-sm text-black">
           No quizzes yet. Click &quot;+ Create quiz&quot; to get started.
         </p>
       )}

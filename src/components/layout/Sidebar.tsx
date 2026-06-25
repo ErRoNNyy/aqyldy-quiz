@@ -15,16 +15,16 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex w-48 shrink-0 flex-col gap-1 border-r border-white/15 bg-gradient-to-b from-[#18c4cb] to-[#12aab3] px-3 py-5">
+    <nav className="flex w-48 shrink-0 flex-col border-r border-white/15 bg-[#008F9F]">
       {navItems.map((item) => (
         <Link
           key={item.id}
           href={item.href}
           className={clsx(
-            "rounded-md px-4 py-2.5 text-sm font-semibold transition",
+            "px-5 py-4 text-sm font-semibold transition",
             pathname === item.href
-              ? "bg-cyan-600 text-white"
-              : "text-white hover:bg-cyan-600",
+              ? "bg-[#16AAB9] text-white"
+              : "text-white hover:bg-[#16AAB9]",
           )}
         >
           {item.label}

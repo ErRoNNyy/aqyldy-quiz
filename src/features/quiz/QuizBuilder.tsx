@@ -339,7 +339,7 @@ export function QuizBuilder() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-[#008F9F]">
       <SiteHeader
         right={<SiteHeaderActionLink href="/dashboard">Exit</SiteHeaderActionLink>}
       />

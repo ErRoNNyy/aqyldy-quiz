@@ -51,21 +51,21 @@ export function HomePanel() {
 
   return (
     <AuthenticatedLayout username={username}>
-      <div className="flex-1 bg-background p-6">
-        <h1 className="mb-5 text-xl font-bold text-white">
+      <div className="flex-1 bg-[#E0EFF0] p-6">
+        <h1 className="mb-5 text-xl font-bold text-black">
           What would you like to do today?
         </h1>
 
         <div className="mb-8 flex gap-4">
           <Link
             href="/dashboard/edit"
-            className="rounded-lg bg-orange-500 px-10 py-3 text-lg font-semibold text-white transition hover:bg-orange-600"
+            className="rounded-lg bg-[#FF7C22] px-10 py-3 text-lg font-semibold text-white transition hover:bg-orange-600"
           >
             Create quiz
           </Link>
           <Link
             href="/discover"
-            className="rounded-lg bg-cyan-600 px-10 py-3 text-lg font-semibold text-white transition hover:bg-cyan-700"
+            className="rounded-lg bg-[#008F9F] px-10 py-3 text-lg font-semibold text-white transition hover:bg-cyan-700"
           >
             Discover
           </Link>
@@ -73,7 +73,7 @@ export function HomePanel() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <section>
-            <div className="mb-3 rounded-t-lg bg-orange-500 px-5 py-2 text-center text-sm font-bold text-white">
+            <div className="mb-3 rounded-t-lg bg-[#FF7C22] px-5 py-2 text-center text-sm font-bold text-white">
               What&apos;s new
             </div>
             <div className="space-y-3">
@@ -111,7 +111,7 @@ export function HomePanel() {
           </section>
 
           <section>
-            <div className="mb-3 rounded-t-lg bg-cyan-600 px-5 py-2 text-center text-sm font-bold text-white">
+            <div className="mb-3 rounded-t-lg bg-[#FF7C22] px-5 py-2 text-center text-sm font-bold text-white">
               Your activities
             </div>
             <div className="space-y-3">
