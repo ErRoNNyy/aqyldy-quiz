@@ -65,8 +65,8 @@ export function ProfilePanel() {
   async function handleSave() {
     if (!userId) return;
     const trimmed = name.trim();
-    if (!trimmed || !/^[a-zA-Z0-9]+$/.test(trimmed)) {
-      setMessage("Name must use letters and numbers only.");
+    if (!trimmed || !/^(?=.*[a-zA-Z])[a-zA-Z0-9]+(?:\s[a-zA-Z0-9]+)*$/.test(trimmed)) {
+      setMessage("Name must contain at least one letter.");
       return;
     }
     setSaving(true);
@@ -121,12 +121,11 @@ export function ProfilePanel() {
           }}
         >
           <label className="mb-1 w-full max-w-[400px] text-left text-xs font-semibold text-cyan-100">
-            Name (letters and numbers only)
+            Name
           </label>
           <input
             value={name}
-            placeholder="e.g. Samat2024"
-            onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))}
+            onChange={(e) => setName(e.target.value.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s{2,}/g, " "))}
             autoComplete="name"
             className="mb-4 h-12 w-full max-w-[400px] rounded-md border border-zinc-300 bg-white px-4 text-center text-lg font-semibold text-zinc-700 outline-none placeholder:text-zinc-400 focus:border-cyan-700"
           />

@@ -25,7 +25,7 @@ export async function getCurrentUser(): Promise<User | null> {
   return data.user ?? null;
 }
 
-const ALPHANUMERIC_NAME = /^[a-zA-Z0-9]+$/;
+const VALID_NAME = /^(?=.*[a-zA-Z])[a-zA-Z0-9]+(?:\s[a-zA-Z0-9]+)*$/;
 
 export function isProfileComplete(profile: UserProfile | null | undefined): boolean {
   if (!profile) {
@@ -33,7 +33,7 @@ export function isProfileComplete(profile: UserProfile | null | undefined): bool
   }
   return (
     !!profile.name &&
-    ALPHANUMERIC_NAME.test(profile.name) &&
+    VALID_NAME.test(profile.name) &&
     !!profile.school_organization?.trim() &&
     !!profile.preferred_language?.trim()
   );
@@ -84,8 +84,8 @@ export async function updateProfile(
   const name = payload.name.trim();
   const school = payload.schoolOrganization.trim();
   const lang = payload.preferredLanguage.trim();
-  if (!name || !ALPHANUMERIC_NAME.test(name)) {
-    throw new Error("Name must contain letters and numbers only.");
+  if (!name || !VALID_NAME.test(name)) {
+    throw new Error("Name must contain at least one letter.");
   }
 
   const { error } = await supabase
@@ -143,8 +143,8 @@ export async function completeProfile(
   const name = payload.name.trim();
   const school = payload.schoolOrganization.trim();
   const lang = payload.preferredLanguage.trim();
-  if (!name || !ALPHANUMERIC_NAME.test(name)) {
-    throw new Error("Name must contain letters and numbers only.");
+  if (!name || !VALID_NAME.test(name)) {
+    throw new Error("Name must contain at least one letter.");
   }
   if (!school) {
     throw new Error("School or organization is required.");
