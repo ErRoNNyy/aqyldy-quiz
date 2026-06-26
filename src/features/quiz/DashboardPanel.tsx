@@ -137,10 +137,10 @@ export function DashboardPanel() {
             type="button"
             onClick={() => setFilter(f.key)}
             className={clsx(
-              "flex-1 rounded-full px-3 py-1.5 text-center text-sm font-semibold transition sm:px-4",
+              "flex-1 rounded-lg px-3 py-1.5 text-center text-sm font-semibold transition sm:px-4",
               filter === f.key
-                ? "bg-orange-500 text-white"
-                : "border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50",
+                ? "bg-orange-400 text-white"
+                : "border border-[#86D5DE] bg-[#D9EDED] text-[#008F9F] hover:bg-white/50",
             )}
           >
             {f.label}
