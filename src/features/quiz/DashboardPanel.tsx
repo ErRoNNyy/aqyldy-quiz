@@ -9,6 +9,7 @@ import {
   deleteQuiz,
   ensureProfile,
   getActiveHostedQuizIds,
+  getEverPublishedQuizIds,
   getCurrentUser,
   getMyQuizzes,
   getProfileMaybe,
@@ -39,6 +40,7 @@ export function DashboardPanel() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
   const [activeHostedQuizIds, setActiveHostedQuizIds] = useState<string[]>([]);
+  const [everPublishedQuizIds, setEverPublishedQuizIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(false);
   const [hostingQuizId, setHostingQuizId] = useState<string | null>(null);
@@ -49,6 +51,8 @@ export function DashboardPanel() {
     setQuizzes(rows);
     const activeIds = await getActiveHostedQuizIds(uid);
     setActiveHostedQuizIds(activeIds);
+    const publishedIds = await getEverPublishedQuizIds(uid);
+    setEverPublishedQuizIds(publishedIds);
     const ids = rows.map((q) => q.id);
     const counts = await getQuestionCountsForQuizzes(ids);
     setQuestionCounts(counts);
@@ -84,9 +88,10 @@ export function DashboardPanel() {
   }, [loadQuizzes, router]);
 
   const activeHostedQuizSet = new Set(activeHostedQuizIds);
+  const everPublishedQuizSet = new Set(everPublishedQuizIds);
   const filteredQuizzes = quizzes.filter((quiz) => {
     if (filter === "draft") {
-      return (questionCounts[quiz.id] ?? 0) === 0;
+      return !everPublishedQuizSet.has(quiz.id);
     }
     if (filter === "not_hosted") {
       return !activeHostedQuizSet.has(quiz.id);
@@ -151,22 +156,22 @@ export function DashboardPanel() {
 
       {status && <p className="mb-4 text-sm font-medium text-red-600">{status}</p>}
 
-      <div className="grid gap-5 lg:grid-cols-2">
+      <div className="grid gap-y-10 gap-x-10 lg:grid-cols-2 pt-5">
         {filteredQuizzes.map((quiz) => {
           const count = questionCounts[quiz.id] ?? 0;
-          const isDraft = count === 0;
           const isHosted = activeHostedQuizSet.has(quiz.id);
-          const quizStatus = isDraft ? "Draft" : isHosted ? "Hosted" : "Not hosted";
-          const statusClassName = isDraft
-            ? "text-red-500"
-            : isHosted
-              ? "text-emerald-600"
-              : "text-zinc-500";
+          const isDraft = !everPublishedQuizSet.has(quiz.id);
+          const quizStatus = isHosted ? "HOSTED" : isDraft ? "DRAFT" : "NOT HOSTED";
+          const statusClassName = isHosted
+            ? "text-emerald-600 rounded-full bg-green-200 px-5 py-1 text-xs font-bold"
+            : isDraft
+              ? "text-[#C46900] rounded-full bg-[#FBE7D0] px-5 py-1 text-xs font-bold"
+              : "text-black-500 rounded-full bg-gray-500 px-5 py-1 text-xs font-bold";
 
           return (
             <div
               key={quiz.id}
-              className="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm"
+              className="flex items-start gap-4 rounded-xl bg-white p-5 shadow-lg"
             >
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-400">
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -176,12 +181,12 @@ export function DashboardPanel() {
 
               <div className="flex flex-1 flex-col">
                 <div className="flex items-start justify-between">
-                  <h3 className="text-base font-bold text-zinc-900">{quiz.title}</h3>
+                  <h3 className="text-xl font-bold text-[#008F9F]">{quiz.title}</h3>
                   <span className={clsx("text-sm font-bold", statusClassName)}>
                     {quizStatus}
                   </span>
                 </div>
-                <p className="mt-0.5 text-xs text-zinc-500">
+                <p className="mt-0.5 text-xs text-black py-2 font-semibold">
                   {count} question{count !== 1 ? "s" : ""} | Updated {timeAgo(quiz.created_at)}
                 </p>
 
@@ -201,11 +206,11 @@ export function DashboardPanel() {
                     onClick={() => void handleHost(quiz.id)}
                     className={clsx(
                       "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition",
-                      isDraft
+                      count === 0
                         ? "border border-zinc-300 bg-white text-zinc-400"
                         : "bg-orange-500 text-white hover:bg-orange-600",
                     )}
-                    disabled={isDraft || hostingQuizId === quiz.id}
+                    disabled={count === 0 || hostingQuizId === quiz.id}
                   >
                     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />

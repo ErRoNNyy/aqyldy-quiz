@@ -467,6 +467,19 @@ export async function getActiveHostedQuizIds(hostId: string) {
   return Array.from(new Set((data ?? []).map((row) => row.quiz_id)));
 }
 
+export async function getEverPublishedQuizIds(hostId: string) {
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("quiz_id")
+    .eq("host_id", hostId);
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.from(new Set((data ?? []).map((row) => row.quiz_id)));
+}
+
 export async function findSessionByCode(code: string) {
   const { data, error } = await supabase
     .from("sessions")
