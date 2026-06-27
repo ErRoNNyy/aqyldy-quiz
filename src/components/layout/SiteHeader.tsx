@@ -11,7 +11,7 @@ export const siteHeaderTitleClassName =
   "text-2xl font-semibold text-white transition hover:opacity-90";
 
 export const siteHeaderActionClassName =
-  "inline-flex items-center justify-center rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700";
+  "inline-flex items-center justify-center rounded-md bg-cyan-600 px-5 py-1.5 text-sm font-semibold text-white transition hover:bg-cyan-700 hover:scale-[1.02]";
 
 type SiteHeaderProps = {
   right?: ReactNode;

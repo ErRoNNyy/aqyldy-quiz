@@ -189,7 +189,7 @@ export function AuthFormPage({ mode }: AuthFormPageProps) {
           <button
             type="submit"
             disabled={loading}
-            className={`h-12 w-[220px] rounded-md bg-orange-500 text-2xl font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300 ${isSignUp ? "" : "mt-5"}`}
+            className={`h-12 w-[220px] rounded-md bg-orange-500 text-2xl font-semibold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-orange-300 ${isSignUp ? "" : "mt-5"}`}
           >
             {loading ? "..." : submitText}
           </button>

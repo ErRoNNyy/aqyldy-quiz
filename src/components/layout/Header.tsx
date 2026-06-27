@@ -59,13 +59,13 @@ export function Header({ username }: HeaderProps) {
                   setOpen(false);
                   router.push("/profile");
                 }}
-                className="w-full px-4 py-2.5 text-left text-sm text-zinc-700 transition hover:bg-zinc-100"
+                className="w-full px-4 py-2.5 text-left text-sm text-zinc-700 transition hover:bg-zinc-100 hover:scale-[1.02]"
               >
                 Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="w-full border-t border-zinc-100 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
+                className="w-full border-t border-zinc-100 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50 hover:scale-[1.02]"
               >
                 Sign out
               </button>

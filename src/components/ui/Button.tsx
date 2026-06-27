@@ -26,7 +26,7 @@ export function Button({
   return (
     <button
       className={clsx(
-        "rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed",
+        "rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed",
         variants[variant],
         className,
       )}

@@ -337,7 +337,7 @@ export function HostPanel() {
           <button
             onClick={handleCreateSession}
             disabled={loading || !selectedQuizId || questions.length === 0}
-            className="rounded-lg bg-orange-500 px-8 py-3 text-lg font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
+            className="rounded-lg bg-orange-500 px-8 py-3 text-lg font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
           >
             {loading ? "Creating..." : "Create Session"}
           </button>
@@ -424,7 +424,7 @@ export function HostPanel() {
             <button
               onClick={() => void startGame()}
               disabled={participants.length === 0 || questions.length === 0}
-              className="w-[150px] rounded-xl bg-orange-500 py-4 text-[22px] font-bold text-white transition hover:bg-orange-600 disabled:opacity-50"
+              className="w-[150px] rounded-xl bg-orange-500 py-4 text-[22px] font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
             >
               Start
             </button>
@@ -662,7 +662,7 @@ export function HostPanel() {
 
           <button
             onClick={() => void advance()}
-            className="mt-6 rounded-xl bg-orange-500 px-8 py-3 text-lg font-bold text-white transition hover:bg-orange-600"
+            className="mt-6 rounded-xl bg-orange-500 px-8 py-3 text-lg font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
           >
             {qIdx + 1 >= questions.length ? "Final Results" : "Next Question"}
           </button>

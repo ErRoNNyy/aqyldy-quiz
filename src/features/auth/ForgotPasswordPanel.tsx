@@ -143,7 +143,7 @@ export function ForgotPasswordPanel() {
               <button
                 type="submit"
                 disabled={loading}
-                className="h-12 w-[220px] rounded-md bg-orange-500 text-xl font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300"
+                className="h-12 w-[220px] rounded-md bg-orange-500 text-xl font-semibold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-orange-300"
               >
                 {loading ? "Sending..." : "Send Code"}
               </button>
@@ -166,7 +166,7 @@ export function ForgotPasswordPanel() {
               <button
                 type="submit"
                 disabled={loading}
-                className="h-12 w-[220px] rounded-md bg-orange-500 text-xl font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300"
+                className="h-12 w-[220px] rounded-md bg-orange-500 text-xl font-semibold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-orange-300"
               >
                 {loading ? "Verifying..." : "Verify Code"}
               </button>
@@ -226,7 +226,7 @@ export function ForgotPasswordPanel() {
               <button
                 type="submit"
                 disabled={loading}
-                className="h-12 w-[220px] rounded-md bg-orange-500 text-xl font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300"
+                className="h-12 w-[220px] rounded-md bg-orange-500 text-xl font-semibold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:cursor-not-allowed disabled:bg-orange-300"
               >
                 {loading ? "Resetting..." : "Reset Password"}
               </button>

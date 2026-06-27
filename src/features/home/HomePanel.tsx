@@ -38,13 +38,13 @@ export function HomePanel() {
         <div className="mb-8 flex gap-4">
           <Link
             href="/dashboard/edit"
-            className="rounded-lg bg-[#FF7C22] px-10 py-3 text-lg font-semibold text-white transition hover:bg-orange-600"
+            className="rounded-lg bg-[#FF7C22] px-10 py-3 text-lg font-semibold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
           >
             Create quiz
           </Link>
           <Link
             href="/discover"
-            className="rounded-lg bg-[#008F9F] px-10 py-3 text-lg font-semibold text-white transition hover:bg-cyan-700"
+            className="rounded-lg bg-[#008F9F] px-10 py-3 text-lg font-semibold text-white transition hover:bg-cyan-700 hover:scale-[1.02]"
           >
             Discover
           </Link>
@@ -64,7 +64,7 @@ export function HomePanel() {
                     <span className="rounded bg-cyan-100 px-2 py-0.5 text-[10px] font-bold text-cyan-600">NEW</span>
                   </div>
                   <p className="mt-1 text-xs text-zinc-500">New feature: Complete against the clock in timed quiz challenge!</p>
-                  <button className="mt-2 rounded-full bg-orange-500 px-4 py-1 text-xs font-semibold text-white">Try now</button>
+                  <button className="mt-2 rounded-md bg-orange-500 px-4 py-1 text-xs font-semibold text-white transition hover:bg-orange-600 hover:scale-[1.02]">Try now</button>
                 </div>
               </div>
 
@@ -110,7 +110,7 @@ export function HomePanel() {
                     <p className="mt-1 text-xs text-zinc-500">Learn something new every day with our tools and quizzes</p>
                     <Link
                       href={`/dashboard/edit?quiz=${quiz.id}`}
-                      className="mt-2 inline-block rounded-full bg-orange-500 px-4 py-1 text-xs font-semibold text-white transition hover:bg-orange-600"
+                      className="mt-2 inline-block rounded-md bg-orange-500 px-4 py-1 text-xs font-semibold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
                     >
                       Continue
                     </Link>

@@ -21,7 +21,7 @@ export function Sidebar() {
           key={item.id}
           href={item.href}
           className={clsx(
-            "px-5 py-4 text-sm font-semibold transition",
+            "px-5 py-4 text-sm font-semibold",
             pathname === item.href
               ? "bg-[#16AAB9] text-white"
               : "text-white hover:bg-[#16AAB9]",
