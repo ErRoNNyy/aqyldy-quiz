@@ -139,7 +139,7 @@ export function DashboardPanel() {
             className={clsx(
               "flex-1 rounded-lg px-3 py-1.5 text-center text-sm font-semibold transition sm:px-4",
               filter === f.key
-                ? "bg-orange-400 text-white"
+                ? "bg-[#FFA05F] text-white"
                 : "border border-[#86D5DE] bg-[#D9EDED] text-[#008F9F] hover:bg-white/50",
             )}
           >
