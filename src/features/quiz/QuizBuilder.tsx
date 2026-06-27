@@ -314,6 +314,10 @@ export function QuizBuilder() {
 
   // Step 1: Quiz title creation (no quiz yet)
   if (!quiz && !queryQuizId) {
+    function handleNoQuizAction() {
+      setStatus("First create a quiz title.");
+    }
+
     return (
       <div className="flex min-h-screen flex-col bg-[#E0EFF0]">
         <SiteHeader
@@ -321,7 +325,61 @@ export function QuizBuilder() {
         />
         <div className="flex flex-1">
           {/* LEFT SIDEBAR */}
-          <aside className="flex w-60 flex-col bg-[#008F9F] px-2" />
+          <aside className="flex w-60 flex-col bg-[#008F9F] px-2">
+            {/* Quiz title */}
+            <div className="border-white/20 px-3 py-6 flex items-center justify-center text-center">
+              <input
+                value={quizTitle}
+                onChange={(e) => setQuizTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleCreateQuiz();
+                }}
+                placeholder="Quiz title"
+                className="w-full rounded-md bg-white/90 px-3 py-4 text-center text-lg font-semibold text-zinc-700 outline-none placeholder:text-zinc-400"
+              />
+            </div>
+
+            {/* Question list container (empty) */}
+            <div className="flex-1 px-3">
+              <div className="flex h-full flex-col bg-[#E0EFF0]">
+                <div className="flex-1 space-y-1 overflow-y-auto" />
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleNoQuizAction}
+                    className="w-full bg-[#16AAB9] py-2 text-xs font-bold text-white transition hover:bg-cyan-600"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar buttons */}
+            <div className="space-y-2 px-3 py-7">
+              <button
+                type="button"
+                onClick={handleNoQuizAction}
+                className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600"
+              >
+                Save draft
+              </button>
+              <button
+                type="button"
+                onClick={handleNoQuizAction}
+                className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600"
+              >
+                Publish quiz
+              </button>
+              <button
+                type="button"
+                onClick={handleNoQuizAction}
+                className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600"
+              >
+                Delete quiz
+              </button>
+            </div>
+          </aside>
 
           {/* MAIN CONTENT */}
           <main className="flex flex-1 flex-col items-center justify-center px-6">
@@ -333,7 +391,7 @@ export function QuizBuilder() {
                 if (e.key === "Enter") void handleCreateQuiz();
               }}
               placeholder="My quiz title"
-              className="mb-4 w-full max-w-lg rounded-full bg-white px-6 py-3 text-center text-sm font-medium text-zinc-700 shadow-sm outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-cyan-400"
+              className="mb-4 w-full max-w-4xl rounded-md bg-white px-6 py-3 text-center text-sm font-medium text-zinc-700 shadow-sm outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-cyan-400"
             />
             <button
               type="button"
