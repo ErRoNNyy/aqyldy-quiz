@@ -2,50 +2,29 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { AuthenticatedLayout } from "@/src/components/layout/AuthenticatedLayout";
+import { useAuth } from "@/src/contexts/AuthContext";
 import {
-  ensureProfile,
-  getCurrentUser,
   getMyQuizzes,
-  getProfileMaybe,
   getQuestionCountsForQuizzes,
-  isProfileComplete,
 } from "@/src/services/supabase/api";
-import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
-import { isSupabaseConfigured } from "@/src/services/supabase/client";
 import type { Quiz } from "@/src/types/models";
 
 export function HomePanel() {
-  const router = useRouter();
-  const [username, setUsername] = useState("");
+  const { user, username, loading } = useAuth();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    async function init() {
-      if (!isSupabaseConfigured) return;
-      const user = await getCurrentUser();
-      if (!user) {
-        router.replace("/signin?next=/home");
-        return;
-      }
-      const fallback = user.email?.split("@")[0] ?? "user";
-      await ensureProfile(user, fallback);
-      const profile = await getProfileMaybe(user.id);
-      if (!isProfileComplete(profile)) {
-        router.replace(profileSetupUrl("/home"));
-        return;
-      }
-      setUsername(profile?.name ?? profile?.username ?? fallback);
-
+    async function loadData() {
+      if (!user) return;
       const rows = await getMyQuizzes(user.id);
       setQuizzes(rows);
       const counts = await getQuestionCountsForQuizzes(rows.map((q) => q.id));
       setQuestionCounts(counts);
     }
-    void init();
-  }, [router]);
+    if (!loading) void loadData();
+  }, [user, loading]);
 
   const recentQuizzes = quizzes.slice(0, 3);
 

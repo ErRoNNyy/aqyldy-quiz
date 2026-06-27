@@ -4,20 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { AuthenticatedLayout } from "@/src/components/layout/AuthenticatedLayout";
+import { useAuth } from "@/src/contexts/AuthContext";
 import {
   createSession,
   deleteQuiz,
-  ensureProfile,
   getActiveHostedQuizIds,
   getEverPublishedQuizIds,
-  getCurrentUser,
   getMyQuizzes,
-  getProfileMaybe,
   getQuestionCountsForQuizzes,
-  isProfileComplete,
 } from "@/src/services/supabase/api";
-import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
-import { isSupabaseConfigured } from "@/src/services/supabase/client";
 import type { Quiz } from "@/src/types/models";
 
 type Filter = "all" | "draft" | "not_hosted";
@@ -35,8 +30,7 @@ function timeAgo(dateStr: string) {
 
 export function DashboardPanel() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
+  const { user, username, loading: authLoading } = useAuth();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
   const [activeHostedQuizIds, setActiveHostedQuizIds] = useState<string[]>([]);
@@ -60,32 +54,15 @@ export function DashboardPanel() {
 
   useEffect(() => {
     async function init() {
-      if (!isSupabaseConfigured) {
-        setStatus("Configure Supabase ENV first.");
-        return;
-      }
+      if (!user) return;
       try {
-        const user = await getCurrentUser();
-        if (!user) {
-          router.replace("/signin?next=/dashboard");
-          return;
-        }
-        const fallback = user.email?.split("@")[0] ?? "user";
-        await ensureProfile(user, fallback);
-        const profile = await getProfileMaybe(user.id);
-        if (!isProfileComplete(profile)) {
-          router.replace(profileSetupUrl("/dashboard"));
-          return;
-        }
-        setUsername(profile?.name ?? profile?.username ?? fallback);
-        setUserId(user.id);
         await loadQuizzes(user.id);
       } catch (error) {
         setStatus((error as Error).message);
       }
     }
-    void init();
-  }, [loadQuizzes, router]);
+    if (!authLoading) void init();
+  }, [user, authLoading, loadQuizzes]);
 
   const activeHostedQuizSet = new Set(activeHostedQuizIds);
   const everPublishedQuizSet = new Set(everPublishedQuizIds);
@@ -100,11 +77,11 @@ export function DashboardPanel() {
   });
 
   async function handleDelete(quizId: string) {
-    if (!userId) return;
+    if (!user) return;
     setLoading(true);
     try {
       await deleteQuiz(quizId);
-      await loadQuizzes(userId);
+      await loadQuizzes(user.id);
     } catch (error) {
       setStatus((error as Error).message);
     } finally {
@@ -113,11 +90,11 @@ export function DashboardPanel() {
   }
 
   async function handleHost(quizId: string) {
-    if (!userId) return;
+    if (!user) return;
     setHostingQuizId(quizId);
     setStatus("");
     try {
-      const session = await createSession(quizId, userId);
+      const session = await createSession(quizId, user.id);
       router.push(`/host?session=${session.id}`);
     } catch (error) {
       setStatus((error as Error).message);

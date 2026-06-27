@@ -1,40 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { AuthenticatedLayout } from "@/src/components/layout/AuthenticatedLayout";
-import {
-  ensureProfile,
-  getCurrentUser,
-  getProfileMaybe,
-  isProfileComplete,
-} from "@/src/services/supabase/api";
-import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
-import { isSupabaseConfigured } from "@/src/services/supabase/client";
+import { useAuth } from "@/src/contexts/AuthContext";
 
 export function DiscoverPanel() {
-  const router = useRouter();
-  const [username, setUsername] = useState("");
-
-  useEffect(() => {
-    async function init() {
-      if (!isSupabaseConfigured) return;
-      const user = await getCurrentUser();
-      if (!user) {
-        router.replace("/signin?next=/discover");
-        return;
-      }
-      const fallback = user.email?.split("@")[0] ?? "user";
-      await ensureProfile(user, fallback);
-      const profile = await getProfileMaybe(user.id);
-      if (!isProfileComplete(profile)) {
-        router.replace(profileSetupUrl("/discover"));
-        return;
-      }
-      setUsername(profile?.name ?? profile?.username ?? fallback);
-    }
-    void init();
-  }, [router]);
+  const { username } = useAuth();
 
   return (
     <AuthenticatedLayout username={username}>
