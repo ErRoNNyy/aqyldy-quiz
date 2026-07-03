@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDropzone } from "react-dropzone";
+import { Reorder } from "framer-motion";
 import clsx from "clsx";
 import {
   SiteHeader,
@@ -289,14 +290,6 @@ export function QuizBuilder() {
   function openReorder() {
     setReorderList([...questions]);
     setReorderOpen(true);
-  }
-
-  function moveQuestion(from: number, to: number) {
-    if (to < 0 || to >= reorderList.length) return;
-    const copy = [...reorderList];
-    const [item] = copy.splice(from, 1);
-    copy.splice(to, 0, item);
-    setReorderList(copy);
   }
 
   async function saveReorder() {
@@ -682,37 +675,42 @@ export function QuizBuilder() {
             aria-modal="true"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-4 text-lg font-bold text-zinc-900">Reorder Questions</h2>
+            <h2 className="mb-1 text-lg font-bold text-zinc-900">Reorder Questions</h2>
+            <p className="mb-4 text-xs text-zinc-500">Drag the questions to reorder them.</p>
 
-            <div className="max-h-[400px] space-y-2 overflow-y-auto">
+            <Reorder.Group
+              axis="y"
+              values={reorderList}
+              onReorder={setReorderList}
+              className="max-h-[400px] space-y-2 overflow-y-auto"
+            >
               {reorderList.map((q, i) => (
-                <div
+                <Reorder.Item
                   key={q.id}
-                  className="flex items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2"
+                  value={q}
+                  className="flex cursor-grab items-center gap-2 rounded-lg bg-zinc-50 px-3 py-2 active:cursor-grabbing"
+                  whileDrag={{ scale: 1.03, boxShadow: "0 8px 20px rgba(0,0,0,0.15)" }}
                 >
                   <span className="w-6 text-center text-sm font-bold text-zinc-500">{i + 1}</span>
                   <span className="flex-1 truncate text-sm font-medium text-zinc-800">
                     {q.text || "Untitled"}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => moveQuestion(i, i - 1)}
-                    disabled={i === 0}
-                    className="rounded-md px-2 py-1 text-sm font-bold text-zinc-500 transition hover:bg-zinc-200 disabled:opacity-30"
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0 text-zinc-400"
                   >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveQuestion(i, i + 1)}
-                    disabled={i === reorderList.length - 1}
-                    className="rounded-md px-2 py-1 text-sm font-bold text-zinc-500 transition hover:bg-zinc-200 disabled:opacity-30"
-                  >
-                    ▼
-                  </button>
-                </div>
+                    <path d="M8 6h.01M8 12h.01M8 18h.01M16 6h.01M16 12h.01M16 18h.01" />
+                  </svg>
+                </Reorder.Item>
               ))}
-            </div>
+            </Reorder.Group>
 
             <div className="mt-5 flex justify-end gap-2">
               <button
