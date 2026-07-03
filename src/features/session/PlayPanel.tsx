@@ -12,6 +12,7 @@ import {
   getAnswersForQuestion,
   getLeaderboard,
   getQuestionById,
+  getQuizQuestions,
   getSession,
   getSessionParticipants,
   removeSubscription,
@@ -42,6 +43,7 @@ export function PlayPanel() {
 
   const [session, setSession] = useState<Session | null>(null);
   const [participants, setParticipants] = useState<SessionParticipant[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [question, setQuestion] = useState<Question | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
@@ -64,6 +66,14 @@ export function PlayPanel() {
   const hasSubmitted = question
     ? (submittedQuestions[question.id] ?? false)
     : false;
+
+  const questionIndex = question
+    ? questions.findIndex((q) => q.id === question.id)
+    : -1;
+  const questionLabel =
+    questionIndex >= 0
+      ? `Question ${questionIndex + 1} of ${questions.length}`
+      : "Get Ready!";
 
   /* ---- Load question data ---- */
 
@@ -139,6 +149,7 @@ export function PlayPanel() {
       }
       const s = await getSession(sessionId);
       setSession(s);
+      void getQuizQuestions(s.quiz_id).then(setQuestions);
       if (s.status === "completed") {
         setLeaderboard(await getLeaderboard(sessionId));
         setPhase("finalLeaderboard");
@@ -306,7 +317,7 @@ export function PlayPanel() {
         {headerBar}
         <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
           <span className="rounded-full bg-orange-500 px-6 py-2 text-lg font-bold text-white">
-            Get Ready!
+            {questionLabel}
           </span>
           <div className="w-full max-w-2xl rounded-2xl bg-white px-8 py-6 text-center shadow-xl">
             <p className="text-xl font-bold text-zinc-800">{question.text}</p>
@@ -366,7 +377,7 @@ export function PlayPanel() {
             {/* Right: question badge + timer */}
             <div className="flex w-44 shrink-0 flex-col items-end gap-2">
               <span className="rounded-lg bg-cyan-600/50 px-4 py-2 text-sm font-bold text-white">
-                Get Ready!
+                {questionLabel}
               </span>
               <span className="rounded-lg bg-cyan-600/50 px-5 py-2 text-lg font-bold text-white tabular-nums">
                 {fmtTime(ansTimer)}
