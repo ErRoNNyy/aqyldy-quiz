@@ -164,7 +164,7 @@ export function DashboardPanel() {
 
       {status && <p className="mb-4 text-sm font-medium text-red-600">{status}</p>}
 
-      <div className="grid gap-y-10 gap-x-30 lg:grid-cols-2 pt-5">
+      <div className="columns-1 gap-4 pt-5 lg:columns-2">
         {filteredQuizzes.map((quiz) => {
           const count = questionCounts[quiz.id] ?? 0;
           const state = getQuizState(quiz);
@@ -185,7 +185,7 @@ export function DashboardPanel() {
           return (
             <div
               key={quiz.id}
-              className="flex items-start gap-4 rounded-xl bg-white p-5 shadow-lg"
+              className="mb-4 flex break-inside-avoid items-start gap-4 rounded-xl bg-white p-5 shadow-lg"
             >
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-zinc-400">
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
