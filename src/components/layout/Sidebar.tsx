@@ -24,7 +24,7 @@ export function Sidebar() {
             "px-5 py-4 text-sm font-semibold",
             pathname === item.href
               ? "bg-[#16AAB9] text-white"
-              : "text-white hover:bg-[#16AAB9]",
+              : "text-white hover:bg-[#0B9DAC]",
           )}
         >
           {item.label}
