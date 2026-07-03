@@ -17,6 +17,8 @@ export interface Quiz {
   user_id: UUID;
   title: string;
   description: string | null;
+  is_published: boolean;
+  is_hosted: boolean;
   created_at: string;
 }
 

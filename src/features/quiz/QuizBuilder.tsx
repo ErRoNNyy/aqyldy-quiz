@@ -14,7 +14,6 @@ import {
 import {
   createQuestion,
   createQuiz,
-  createSession,
   deleteQuestion,
   deleteQuiz,
   ensureProfile,
@@ -23,6 +22,7 @@ import {
   getMyQuizzes,
   getProfileMaybe,
   getQuizQuestions,
+  publishQuiz,
   reorderQuestions,
   updateQuestion,
   updateQuiz,
@@ -284,8 +284,8 @@ export function QuizBuilder() {
     setLoading(true);
     setStatus("");
     try {
-      const session = await createSession(quiz.id, userId);
-      router.push(`/host?quiz=${quiz.id}&session=${session.id}`);
+      await publishQuiz(quiz.id);
+      router.push("/dashboard");
     } catch (e) {
       setStatus((e as Error).message);
     } finally {

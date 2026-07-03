@@ -8,14 +8,15 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import {
   createSession,
   deleteQuiz,
-  getActiveHostedQuizIds,
-  getEverPublishedQuizIds,
   getMyQuizzes,
   getQuestionCountsForQuizzes,
+  publishQuiz,
+  removeSubscription,
+  subscribeHostSessions,
 } from "@/src/services/supabase/api";
 import type { Quiz } from "@/src/types/models";
 
-type Filter = "all" | "draft" | "not_hosted";
+type Filter = "all" | "draft" | "published" | "hosted";
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -33,21 +34,21 @@ export function DashboardPanel() {
   const { user, username, loading: authLoading } = useAuth();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [questionCounts, setQuestionCounts] = useState<Record<string, number>>({});
-  const [activeHostedQuizIds, setActiveHostedQuizIds] = useState<string[]>([]);
-  const [everPublishedQuizIds, setEverPublishedQuizIds] = useState<string[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(false);
+  const [publishingQuizId, setPublishingQuizId] = useState<string | null>(null);
   const [hostingQuizId, setHostingQuizId] = useState<string | null>(null);
   const [confirmDeleteQuiz, setConfirmDeleteQuiz] = useState<Quiz | null>(null);
   const [status, setStatus] = useState("");
 
+  const refreshQuizzes = useCallback(async (uid: string) => {
+    const rows = await getMyQuizzes(uid);
+    setQuizzes(rows);
+  }, []);
+
   const loadQuizzes = useCallback(async (uid: string) => {
     const rows = await getMyQuizzes(uid);
     setQuizzes(rows);
-    const activeIds = await getActiveHostedQuizIds(uid);
-    setActiveHostedQuizIds(activeIds);
-    const publishedIds = await getEverPublishedQuizIds(uid);
-    setEverPublishedQuizIds(publishedIds);
     const ids = rows.map((q) => q.id);
     const counts = await getQuestionCountsForQuizzes(ids);
     setQuestionCounts(counts);
@@ -65,16 +66,29 @@ export function DashboardPanel() {
     if (!authLoading) void init();
   }, [user, authLoading, loadQuizzes]);
 
-  const activeHostedQuizSet = new Set(activeHostedQuizIds);
-  const everPublishedQuizSet = new Set(everPublishedQuizIds);
+  useEffect(() => {
+    if (!user) return;
+    const channel = subscribeHostSessions(user.id, () => {
+      void refreshQuizzes(user.id);
+    });
+    const onFocus = () => void refreshQuizzes(user.id);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      removeSubscription(channel);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [user, refreshQuizzes]);
+
+  type QuizState = "draft" | "published" | "hosted";
+  const getQuizState = (quiz: Quiz): QuizState => {
+    if (quiz.is_hosted) return "hosted";
+    if (quiz.is_published) return "published";
+    return "draft";
+  };
+
   const filteredQuizzes = quizzes.filter((quiz) => {
-    if (filter === "draft") {
-      return !everPublishedQuizSet.has(quiz.id);
-    }
-    if (filter === "not_hosted") {
-      return everPublishedQuizSet.has(quiz.id) && !activeHostedQuizSet.has(quiz.id);
-    }
-    return true;
+    if (filter === "all") return true;
+    return getQuizState(quiz) === filter;
   });
 
   async function handleDelete(quizId: string) {
@@ -88,6 +102,20 @@ export function DashboardPanel() {
       setStatus((error as Error).message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handlePublish(quizId: string) {
+    if (!user) return;
+    setPublishingQuizId(quizId);
+    setStatus("");
+    try {
+      await publishQuiz(quizId);
+      await loadQuizzes(user.id);
+    } catch (error) {
+      setStatus((error as Error).message);
+    } finally {
+      setPublishingQuizId(null);
     }
   }
 
@@ -108,7 +136,8 @@ export function DashboardPanel() {
   const filters: { key: Filter; label: string }[] = [
     { key: "all", label: "All" },
     { key: "draft", label: "Draft" },
-    { key: "not_hosted", label: "Not hosted" },
+    { key: "published", label: "Published" },
+    { key: "hosted", label: "Hosted" },
   ];
 
   return (
@@ -138,14 +167,20 @@ export function DashboardPanel() {
       <div className="grid gap-y-10 gap-x-30 lg:grid-cols-2 pt-5">
         {filteredQuizzes.map((quiz) => {
           const count = questionCounts[quiz.id] ?? 0;
-          const isHosted = activeHostedQuizSet.has(quiz.id);
-          const isDraft = !everPublishedQuizSet.has(quiz.id);
-          const quizStatus = isHosted ? "HOSTED" : isDraft ? "DRAFT" : "NOT HOSTED";
-          const statusClassName = isHosted
-            ? "text-emerald-600 rounded-full bg-green-200 px-5 py-1 text-xs font-bold"
-            : isDraft
-              ? "text-[#C46900] rounded-full bg-[#FBE7D0] px-5 py-1 text-xs font-bold"
-              : "text-black-500 rounded-full bg-gray-300 px-5 py-1 text-xs font-bold";
+          const state = getQuizState(quiz);
+          const isDraft = state === "draft";
+          const quizStatus =
+            state === "hosted"
+              ? "HOSTED"
+              : state === "published"
+                ? "PUBLISHED"
+                : "DRAFT";
+          const statusClassName =
+            state === "hosted"
+              ? "text-emerald-600 rounded-full bg-green-200 px-5 py-1 text-xs font-bold"
+              : state === "published"
+                ? "text-[#0369A1] rounded-full bg-[#DBEEFB] px-5 py-1 text-xs font-bold"
+                : "text-[#C46900] rounded-full bg-[#FBE7D0] px-5 py-1 text-xs font-bold";
 
           return (
             <div
@@ -180,22 +215,41 @@ export function DashboardPanel() {
                     </svg>
                     Edit
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleHost(quiz.id)}
-                    className={clsx(
-                      "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition",
-                      count === 0
-                        ? "border border-zinc-300 bg-white text-zinc-400"
-                        : "bg-orange-500 text-white hover:bg-orange-600 hover:scale-[1.02]",
-                    )}
-                    disabled={count === 0 || hostingQuizId === quiz.id}
-                  >
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-                    </svg>
-                    {hostingQuizId === quiz.id ? "Hosting..." : "Host"}
-                  </button>
+                  {isDraft ? (
+                    <button
+                      type="button"
+                      onClick={() => void handlePublish(quiz.id)}
+                      className={clsx(
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition",
+                        count === 0
+                          ? "border border-zinc-300 bg-white text-zinc-400"
+                          : "bg-orange-500 text-white hover:bg-orange-600 hover:scale-[1.02]",
+                      )}
+                      disabled={count === 0 || publishingQuizId === quiz.id}
+                    >
+                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5" />
+                      </svg>
+                      {publishingQuizId === quiz.id ? "Publishing..." : "Publish"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void handleHost(quiz.id)}
+                      className={clsx(
+                        "flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition",
+                        count === 0
+                          ? "border border-zinc-300 bg-white text-zinc-400"
+                          : "bg-orange-500 text-white hover:bg-orange-600 hover:scale-[1.02]",
+                      )}
+                      disabled={count === 0 || hostingQuizId === quiz.id}
+                    >
+                      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                      </svg>
+                      {hostingQuizId === quiz.id ? "Hosting..." : "Host"}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={() => setConfirmDeleteQuiz(quiz)}

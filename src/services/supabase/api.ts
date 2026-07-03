@@ -242,6 +242,19 @@ export async function updateQuiz(
   return data;
 }
 
+export async function publishQuiz(quizId: string) {
+  const { data, error } = await supabase
+    .from("quizzes")
+    .update({ is_published: true })
+    .eq("id", quizId)
+    .select("*")
+    .single<Quiz>();
+  if (error) {
+    throw error;
+  }
+  return data;
+}
+
 export async function deleteQuiz(quizId: string) {
   const { error } = await supabase.from("quizzes").delete().eq("id", quizId);
   if (error) {
@@ -450,6 +463,10 @@ export async function createSession(quizId: string, hostId: string) {
   if (error) {
     throw error;
   }
+  await supabase
+    .from("quizzes")
+    .update({ is_published: true, is_hosted: true })
+    .eq("id", quizId);
   return data;
 }
 
@@ -459,19 +476,6 @@ export async function getActiveHostedQuizIds(hostId: string) {
     .select("quiz_id")
     .eq("host_id", hostId)
     .eq("status", "active");
-
-  if (error) {
-    throw error;
-  }
-
-  return Array.from(new Set((data ?? []).map((row) => row.quiz_id)));
-}
-
-export async function getEverPublishedQuizIds(hostId: string) {
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("quiz_id")
-    .eq("host_id", hostId);
 
   if (error) {
     throw error;
@@ -729,6 +733,27 @@ export function subscribeSession(
       },
       (payload) => {
         onUpdate(payload.new as Session);
+      },
+    )
+    .subscribe();
+}
+
+export function subscribeHostSessions(
+  hostId: string,
+  onChange: () => void,
+): RealtimeChannel {
+  return supabase
+    .channel(`public:sessions:host_id=eq.${hostId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "sessions",
+        filter: `host_id=eq.${hostId}`,
+      },
+      () => {
+        onChange();
       },
     )
     .subscribe();
