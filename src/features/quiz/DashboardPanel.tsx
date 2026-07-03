@@ -133,7 +133,7 @@ export function DashboardPanel() {
 
       {status && <p className="mb-4 text-sm font-medium text-red-600">{status}</p>}
 
-      <div className="grid gap-y-10 gap-x-10 lg:grid-cols-2 pt-5">
+      <div className="grid gap-y-10 gap-x-30 lg:grid-cols-2 pt-5">
         {filteredQuizzes.map((quiz) => {
           const count = questionCounts[quiz.id] ?? 0;
           const isHosted = activeHostedQuizSet.has(quiz.id);
@@ -156,10 +156,10 @@ export function DashboardPanel() {
                 </svg>
               </div>
 
-              <div className="flex flex-1 flex-col">
-                <div className="flex items-start justify-between">
-                  <h3 className="text-xl font-bold text-[#008F9F]">{quiz.title}</h3>
-                  <span className={clsx("text-sm font-bold", statusClassName)}>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex items-start justify-between gap-7">
+                  <h3 className="min-w-0 break-all text-xl font-bold text-[#008F9F]">{quiz.title}</h3>
+                  <span className={clsx("shrink-0 text-sm font-bold", statusClassName)}>
                     {quizStatus}
                   </span>
                 </div>
