@@ -412,14 +412,14 @@ export function QuizBuilder() {
 
   // Step 2: Full editor with sidebar
   return (
-    <div className="flex min-h-screen flex-col bg-[#E0EFF0]">
+    <div className="flex h-screen flex-col bg-[#E0EFF0]">
       <SiteHeader
         right={<SiteHeaderActionLink href="/dashboard">Exit</SiteHeaderActionLink>}
       />
 
-      <div className="flex flex-1">
+      <div className="flex min-h-0 flex-1">
         {/* LEFT SIDEBAR */}
-        <aside className="flex w-60 flex-col bg-[#008F9F] px-2">
+        <aside className="flex min-h-0 w-60 flex-col bg-[#008F9F] px-2">
           {/* Quiz title */}
           <div className="border-white/20 px-3 py-6 flex items-center justify-center text-center">
             <input
@@ -445,7 +445,7 @@ export function QuizBuilder() {
           </div>
 
           {/* Question list container */}
-          <div className="flex-1 px-3">
+          <div className="min-h-0 flex-1 px-3">
             <div className="flex h-full flex-col bg-[#E0EFF0]">
               {questions.length >= 2 && (
                 <div className="px-2 pt-2">
@@ -516,7 +516,7 @@ export function QuizBuilder() {
         </aside>
 
         {/* MAIN EDITOR */}
-        <main className="flex flex-1 flex-col items-center gap-10 p-6">
+        <main className="flex min-h-0 flex-1 flex-col items-center gap-10 overflow-y-auto p-6">
           {/* Question text */}
           <input
             value={questionText}
