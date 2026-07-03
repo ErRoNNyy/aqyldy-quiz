@@ -317,7 +317,7 @@ export function PlayPanel() {
         {headerBar}
         <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
           <span className="rounded-full bg-orange-500 px-6 py-2 text-lg font-bold text-white">
-            {questionLabel}
+            Get Ready!
           </span>
           <div className="w-full max-w-2xl rounded-2xl bg-white px-8 py-6 text-center shadow-xl">
             <p className="text-xl font-bold text-zinc-800">{question.text}</p>
