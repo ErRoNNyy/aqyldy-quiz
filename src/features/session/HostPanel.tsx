@@ -368,7 +368,7 @@ export function HostPanel() {
                 onClick={copyCode}
                 className="absolute right-4 top-4 rounded-xl bg-orange-500 px-5 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
               >
-                Copy link
+                Copy code
               </button>
               <p className="text-[28px] leading-none text-black">Game CODE</p>
               <p className="mt-4 text-[86px] font-normal leading-none text-black">
