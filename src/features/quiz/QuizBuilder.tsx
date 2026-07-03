@@ -315,6 +315,10 @@ export function QuizBuilder() {
   }
 
   function openReorder() {
+    if (questions.length < 2) {
+      setStatus("Add at least 2 questions to reorder.");
+      return;
+    }
     setReorderList([...questions]);
     setReorderOpen(true);
   }
@@ -380,21 +384,21 @@ export function QuizBuilder() {
               <button
                 type="button"
                 onClick={handleNoQuizAction}
-                className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
+                className="w-full rounded-md bg-[#FF7C22] py-2 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
               >
                 Save draft
               </button>
               <button
                 type="button"
                 onClick={handleNoQuizAction}
-                className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
+                className="w-full rounded-md bg-[#FF7C22] py-2 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
               >
                 Publish quiz
               </button>
               <button
                 type="button"
                 onClick={handleNoQuizAction}
-                className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
+                className="w-full rounded-md bg-[#FF7C22] py-2 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
               >
                 Delete quiz
               </button>
@@ -496,17 +500,6 @@ export function QuizBuilder() {
           {/* Question list container */}
           <div className="min-h-0 flex-1 px-3">
             <div className="flex h-full flex-col bg-[#E0EFF0]">
-              {questions.length >= 2 && (
-                <div className="px-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={openReorder}
-                    className="mb-1 w-full rounded-md bg-yellow-400 py-1.5 text-xs font-bold text-white transition hover:bg-yellow-500"
-                  >
-                    Reorder
-                  </button>
-                </div>
-              )}
               <div className="flex-1 space-y-1 overflow-y-auto">
                 {questions.map((q, i) => (
                   <button
@@ -514,7 +507,7 @@ export function QuizBuilder() {
                     key={q.id}
                     onClick={() => selectQuestion(q)}
                     className={clsx(
-                      "w-full truncate px-6 py-2 text-left text-md font-semibold transition",
+                      "w-full truncate px-6 py-2 text-left text-sm font-semibold transition",
                       editingId === q.id
                         ? "bg-cyan-500 text-white"
                         : "bg-white text-zinc-700 hover:bg-cyan-100",
@@ -524,13 +517,20 @@ export function QuizBuilder() {
                   </button>
                 ))}
               </div>
-              <div>
+              <div className="grid grid-cols-2">
                 <button
                   type="button"
                   onClick={() => { clearEditor(); }}
-                  className="w-full bg-[#16AAB9] py-2 text-xs font-bold text-white transition hover:bg-cyan-600 hover:scale-[1.02]"
+                  className="w-full bg-[#16AAB9] py-2 text-sm font-bold text-white transition hover:bg-cyan-600 hover:scale-[1.02]"
                 >
                   Add
+                </button>
+                <button
+                  type="button"
+                  onClick={openReorder}
+                  className="w-full bg-[#16AAB9] py-2 text-sm font-bold text-white transition hover:bg-cyan-600 hover:scale-[1.02]"
+                >
+                  Reorder
                 </button>
               </div>
             </div>
@@ -541,7 +541,7 @@ export function QuizBuilder() {
               type="button"
               onClick={() => void handleSaveDraft()}
               disabled={loading}
-              className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
+              className="w-full rounded-md bg-[#FF7C22] py-2 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
             >
               Save draft
             </button>
@@ -549,7 +549,7 @@ export function QuizBuilder() {
               type="button"
               onClick={() => void handlePublish()}
               disabled={loading}
-              className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
+              className="w-full rounded-md bg-[#FF7C22] py-2 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
             >
               Publish quiz
             </button>
@@ -557,7 +557,7 @@ export function QuizBuilder() {
               type="button"
               onClick={() => void handleDeleteQuiz()}
               disabled={loading}
-              className="w-full rounded-md bg-[#FF7C22] py-2 text-md font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
+              className="w-full rounded-md bg-[#FF7C22] py-2 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
             >
               Delete quiz
             </button>
@@ -691,7 +691,7 @@ export function QuizBuilder() {
                 type="button"
                 onClick={() => void handleDeleteQuestion()}
                 disabled={loading || !editingId}
-                className="flex items-center gap-1.5 rounded-lg bg-red-300 px-7 py-2.5 text-md font-bold text-red-700 transition hover:bg-red-400 hover:scale-[1.02] disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg bg-red-300 px-7 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-400 hover:scale-[1.02] disabled:opacity-50"
               >
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -702,7 +702,7 @@ export function QuizBuilder() {
               type="button"
               onClick={() => void handleSaveQuestion()}
               disabled={loading}
-              className="flex items-center gap-1.5 rounded-lg bg-[#008F9F] px-10 py-2.5 text-md font-bold text-white transition hover:bg-[#007080] hover:scale-[1.02] disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg bg-[#008F9F] px-10 py-2.5 text-sm font-bold text-white transition hover:bg-[#007080] hover:scale-[1.02] disabled:opacity-50"
             >
               {loading ? "Saving..." : "Save"}
             </button>
