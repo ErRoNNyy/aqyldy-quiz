@@ -160,7 +160,7 @@ export function DashboardPanel() {
 
               <div className="flex min-w-0 flex-1 flex-col">
                 <div className="flex items-start justify-between gap-7">
-                  <h3 className="min-w-0 break-all text-xl font-bold text-[#008F9F]">{quiz.title}</h3>
+                  <h3 className="min-w-0 break-all text-md font-bold text-[#008F9F]">{quiz.title}</h3>
                   <span className={clsx("shrink-0 text-sm font-bold", statusClassName)}>
                     {quizStatus}
                   </span>
@@ -169,7 +169,7 @@ export function DashboardPanel() {
                   {count} question{count !== 1 ? "s" : ""} | Updated {timeAgo(quiz.created_at)}
                 </p>
 
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex gap-5">
                   <button
                     type="button"
                     onClick={() => router.push(`/dashboard/edit?quiz=${quiz.id}`)}

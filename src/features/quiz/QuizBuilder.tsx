@@ -8,6 +8,7 @@ import { Reorder } from "framer-motion";
 import clsx from "clsx";
 import {
   SiteHeader,
+  SiteHeaderActionButton,
   SiteHeaderActionLink,
 } from "@/src/components/layout/SiteHeader";
 import {
@@ -43,6 +44,10 @@ const ANSWER_COLORS = [
   { bg: "bg-green-500" },
 ];
 
+
+const truncate = (text: string, max = 38) =>
+  text.length > max ? `${text.slice(0, max)}...` : text;
+
 function emptyAnswers(): DraftAnswer[] {
   return [
     { text: "", isCorrect: false },
@@ -72,6 +77,7 @@ export function QuizBuilder() {
   const [draftAnswers, setDraftAnswers] = useState<DraftAnswer[]>(emptyAnswers());
   const [reorderOpen, setReorderOpen] = useState(false);
   const [reorderList, setReorderList] = useState<Question[]>([]);
+  const [titleEditing, setTitleEditing] = useState(false);
 
   const onDrop = useCallback((files: File[]) => {
     if (files[0]) setQuestionImage(files[0]);
@@ -287,6 +293,27 @@ export function QuizBuilder() {
     }
   }
 
+  async function handleSaveTitle() {
+    if (!quiz) return;
+    const t = (quiz.title ?? quizTitle).trim();
+    if (!t) {
+      setStatus("Please enter a quiz title.");
+      return;
+    }
+    setLoading(true);
+    setStatus("");
+    try {
+      await updateQuiz(quiz.id, { title: t });
+      setQuiz({ ...quiz, title: t });
+      setQuizTitle(t);
+      setTitleEditing(false);
+    } catch (e) {
+      setStatus((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   function openReorder() {
     setReorderList([...questions]);
     setReorderOpen(true);
@@ -328,7 +355,7 @@ export function QuizBuilder() {
                   if (e.key === "Enter") void handleCreateQuiz();
                 }}
                 placeholder="Quiz title"
-                className="w-full rounded-md bg-white/90 px-3 py-4 text-center text-lg font-semibold text-zinc-700 outline-none placeholder:text-zinc-400"
+                className="w-full rounded-md bg-white/90 px-3 py-4 text-center text-sm font-semibold text-zinc-700 outline-none placeholder:text-zinc-400"
               />
             </div>
 
@@ -403,6 +430,45 @@ export function QuizBuilder() {
     );
   }
 
+  // Title edit page (opened from the sidebar title in the editor)
+  if (titleEditing && quiz) {
+    return (
+      <div className="flex min-h-screen flex-col bg-[#E0EFF0]">
+        <SiteHeader
+          right={
+            <SiteHeaderActionButton onClick={() => setTitleEditing(false)}>
+              Back
+            </SiteHeaderActionButton>
+          }
+        />
+        <main className="flex flex-1 flex-col items-center justify-center px-6">
+          <h2 className="mb-4 text-lg font-bold text-zinc-800">Quiz title</h2>
+          <input
+            value={quiz.title}
+            autoFocus
+            onChange={(e) => setQuiz({ ...quiz, title: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void handleSaveTitle();
+            }}
+            placeholder="My quiz title"
+            className="mb-4 w-full max-w-4xl rounded-md bg-white px-6 py-3 text-center text-sm font-medium text-zinc-700 shadow-sm outline-none placeholder:text-zinc-400 focus:ring-2 focus:ring-cyan-400"
+          />
+          <button
+            type="button"
+            onClick={() => void handleSaveTitle()}
+            disabled={loading}
+            className="rounded-md bg-[#1fb6c4] px-8 py-2 text-sm font-bold text-white transition hover:bg-[#179aa6] hover:scale-[1.02] disabled:opacity-50"
+          >
+            {loading ? "Saving..." : "Save"}
+          </button>
+          {status && (
+            <p className="mt-4 text-xs font-medium text-red-500">{status}</p>
+          )}
+        </main>
+      </div>
+    );
+  }
+
   // Step 2: Full editor with sidebar
   return (
     <div className="flex h-screen flex-col bg-[#E0EFF0]">
@@ -415,26 +481,16 @@ export function QuizBuilder() {
         <aside className="flex min-h-0 w-60 flex-col bg-[#008F9F] px-2">
           {/* Quiz title */}
           <div className="border-white/20 px-3 py-6 flex items-center justify-center text-center">
-            <input
-              value={quiz?.title ?? quizTitle}
-              onChange={(e) => {
-                const v = e.target.value;
-                setQuizTitle(v);
-                if (quiz) setQuiz({ ...quiz, title: v });
-              }}
-              onBlur={async () => {
-                const t = (quiz?.title ?? quizTitle).trim();
-                if (!t || !quiz) return;
-                try {
-                  await updateQuiz(quiz.id, { title: t });
-                } catch {}
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-              }}
-              placeholder="Quiz title"
-              className="w-full rounded-md bg-white/90 px-3 py-4 text-center text-lg font-semibold text-zinc-700 outline-none placeholder:text-zinc-400"
-            />
+            <button
+              type="button"
+              onClick={() => setTitleEditing(true)}
+              title={quiz?.title ?? quizTitle}
+              className="line-clamp-2 w-full break-all rounded-md bg-white/90 p-4 text-center text-sm font-semibold leading-tight text-zinc-700 outline-none transition hover:bg-white"
+            >
+              {(quiz?.title ?? quizTitle)
+                ? truncate(quiz?.title ?? quizTitle)
+                : <span className="text-zinc-400">Quiz title</span>}
+            </button>
           </div>
 
           {/* Question list container */}
