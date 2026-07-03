@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kahoot KZ",
-  description: "Kahoot-like quiz app built with Next.js + Supabase",
+  title: "Aqyldy Quiz",
+  description: "The best quiz app for your business and education",
 };
 
 export default function RootLayout({
