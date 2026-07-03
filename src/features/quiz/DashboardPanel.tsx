@@ -38,6 +38,7 @@ export function DashboardPanel() {
   const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(false);
   const [hostingQuizId, setHostingQuizId] = useState<string | null>(null);
+  const [confirmDeleteQuiz, setConfirmDeleteQuiz] = useState<Quiz | null>(null);
   const [status, setStatus] = useState("");
 
   const loadQuizzes = useCallback(async (uid: string) => {
@@ -82,6 +83,7 @@ export function DashboardPanel() {
     try {
       await deleteQuiz(quizId);
       await loadQuizzes(user.id);
+      setConfirmDeleteQuiz(null);
     } catch (error) {
       setStatus((error as Error).message);
     } finally {
@@ -196,7 +198,7 @@ export function DashboardPanel() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDelete(quiz.id)}
+                    onClick={() => setConfirmDeleteQuiz(quiz)}
                     disabled={loading}
                     className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2 py-1.5 text-xs font-semibold text-red-600 transition hover:bg-red-100 hover:scale-[1.02] disabled:opacity-50"
                   >
@@ -218,6 +220,47 @@ export function DashboardPanel() {
         </p>
       )}
       </div>
+
+      {confirmDeleteQuiz && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => !loading && setConfirmDeleteQuiz(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mb-2 text-lg font-bold text-zinc-900">Delete quiz?</h2>
+            <p className="mb-5 text-sm text-zinc-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-zinc-900 break-all">
+                &quot;{confirmDeleteQuiz.title}&quot;
+              </span>
+              ? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteQuiz(null)}
+                disabled={loading}
+                className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:scale-[1.02] disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDelete(confirmDeleteQuiz.id)}
+                disabled={loading}
+                className="rounded-md bg-red-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-600 hover:scale-[1.02] disabled:opacity-50"
+              >
+                {loading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthenticatedLayout>
   );
 }
