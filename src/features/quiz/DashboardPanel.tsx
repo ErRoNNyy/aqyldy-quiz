@@ -71,7 +71,7 @@ export function DashboardPanel() {
       return !everPublishedQuizSet.has(quiz.id);
     }
     if (filter === "not_hosted") {
-      return !activeHostedQuizSet.has(quiz.id);
+      return everPublishedQuizSet.has(quiz.id) && !activeHostedQuizSet.has(quiz.id);
     }
     return true;
   });
@@ -143,7 +143,7 @@ export function DashboardPanel() {
             ? "text-emerald-600 rounded-full bg-green-200 px-5 py-1 text-xs font-bold"
             : isDraft
               ? "text-[#C46900] rounded-full bg-[#FBE7D0] px-5 py-1 text-xs font-bold"
-              : "text-black-500 rounded-full bg-gray-500 px-5 py-1 text-xs font-bold";
+              : "text-black-500 rounded-full bg-gray-300 px-5 py-1 text-xs font-bold";
 
           return (
             <div

@@ -11,7 +11,6 @@ import {
 import {
   completeSession,
   createSession,
-  deleteSession,
   ensureProfile,
   getAnswersForQuestion,
   getCurrentUser,
@@ -131,7 +130,7 @@ export function HostPanel() {
 
   useEffect(() => {
     if (!session) return;
-    const fn = () => void deleteSession(session.id);
+    const fn = () => void completeSession(session.id);
     window.addEventListener("beforeunload", fn);
     return () => window.removeEventListener("beforeunload", fn);
   }, [session]);
@@ -287,7 +286,7 @@ export function HostPanel() {
     if (waitRef.current) clearInterval(waitRef.current);
     if (session) {
       try {
-        await deleteSession(session.id);
+        await completeSession(session.id);
       } catch {
         /* best-effort */
       }
