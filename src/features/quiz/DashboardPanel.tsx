@@ -201,7 +201,7 @@ export function DashboardPanel() {
                   </span>
                 </div>
                 <p className="mt-0.5 text-xs text-black py-2 font-semibold">
-                  {count} question{count !== 1 ? "s" : ""} | Updated {timeAgo(quiz.created_at)}
+                  {count} question{count !== 1 ? "s" : ""} | Updated {timeAgo(quiz.updated_at)}
                 </p>
 
                 <div className="mt-3 flex gap-5">

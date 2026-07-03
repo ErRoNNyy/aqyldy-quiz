@@ -18,7 +18,8 @@ create table if not exists public.quizzes (
   description text,
   is_published boolean not null default false,
   is_hosted boolean not null default false,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists public.questions (

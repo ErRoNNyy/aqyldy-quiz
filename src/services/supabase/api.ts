@@ -225,7 +225,9 @@ export async function updateQuiz(
   quizId: string,
   updates: { title?: string; description?: string | null },
 ) {
-  const patch: Record<string, string | null> = {};
+  const patch: Record<string, string | null> = {
+    updated_at: new Date().toISOString(),
+  };
   if (updates.title !== undefined) patch.title = updates.title;
   if (updates.description !== undefined) patch.description = updates.description;
 
@@ -240,6 +242,13 @@ export async function updateQuiz(
     throw error;
   }
   return data;
+}
+
+export async function touchQuiz(quizId: string) {
+  await supabase
+    .from("quizzes")
+    .update({ updated_at: new Date().toISOString() })
+    .eq("id", quizId);
 }
 
 export async function publishQuiz(quizId: string) {
@@ -383,6 +392,7 @@ export async function createQuestion(quizId: string, payload: CreateQuestionPayl
     throw answersError;
   }
 
+  await touchQuiz(quizId);
   return question;
 }
 
@@ -421,6 +431,8 @@ export async function updateQuestion(
   }));
   const { error: aErr } = await supabase.from("answers").insert(answerRows);
   if (aErr) throw aErr;
+
+  await touchQuiz(quizId);
 }
 
 export async function deleteQuestion(questionId: string) {
@@ -445,6 +457,8 @@ export async function deleteQuestion(questionId: string) {
 
   const remaining = await getQuizQuestions(question.quiz_id);
   await reorderQuestions(remaining.map((q) => q.id));
+
+  await touchQuiz(question.quiz_id);
 }
 
 export async function createSession(quizId: string, hostId: string) {

@@ -20,6 +20,7 @@ export interface Quiz {
   is_published: boolean;
   is_hosted: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Question {

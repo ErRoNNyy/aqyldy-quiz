@@ -24,6 +24,7 @@ import {
   getQuizQuestions,
   publishQuiz,
   reorderQuestions,
+  touchQuiz,
   updateQuestion,
   updateQuiz,
   isProfileComplete,
@@ -327,6 +328,7 @@ export function QuizBuilder() {
     setLoading(true);
     try {
       await reorderQuestions(reorderList.map((q) => q.id));
+      if (quiz) await touchQuiz(quiz.id);
       setQuestions(reorderList);
       setReorderOpen(false);
     } catch (e) {
