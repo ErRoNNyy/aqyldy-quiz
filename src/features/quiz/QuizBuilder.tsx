@@ -89,11 +89,14 @@ export function QuizBuilder() {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
     maxFiles: 1,
+    noClick: true,
   });
+
+  const hasImage = Boolean(filePreview || existingImageUrl);
 
   useEffect(() => {
     if (!questionImage) {
@@ -595,13 +598,17 @@ export function QuizBuilder() {
           />
 
           {/* Image upload */}
-          <div className="relative w-full max-w-2xl">
+          <div className="flex w-full max-w-2xl items-start gap-3">
             <div
               {...getRootProps()}
-              className="flex w-full h-full max-h-84 cursor-pointer flex-col items-center justify-center rounded-lg border border-zinc-300 bg-white py-14 transition hover:border-cyan-400"
+              onClick={hasImage ? undefined : open}
+              className={clsx(
+                "flex h-full max-h-84 flex-1 flex-col items-center justify-center rounded-lg border border-zinc-300 bg-white py-14 transition hover:border-cyan-400",
+                !hasImage && "cursor-pointer",
+              )}
             >
               <input {...getInputProps()} />
-              {filePreview || existingImageUrl ? (
+              {hasImage ? (
                 <img
                   src={filePreview ?? existingImageUrl ?? undefined}
                   alt="Preview"
@@ -616,20 +623,38 @@ export function QuizBuilder() {
                 </>
               )}
             </div>
-            {(filePreview || existingImageUrl) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setQuestionImage(null);
-                  setExistingImageUrl(null);
-                }}
-                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
-                aria-label="Remove image"
-              >
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
-              </button>
+            {hasImage && (
+              <div className="flex shrink-0 flex-col items-center gap-4">
+                <button
+                  type="button"
+                  onClick={open}
+                  className="flex h-6 w-6 items-center justify-center transition hover:scale-[1.1]"
+                  aria-label="Change image"
+                  title="Change image"
+                >
+                  <img
+                    src="/icons/photo_edit_icons/Edit.png"
+                    alt="Change image"
+                    className="h-6 w-6 object-contain"
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuestionImage(null);
+                    setExistingImageUrl(null);
+                  }}
+                  className="flex h-5 w-5 items-center justify-center transition hover:scale-[1.1]"
+                  aria-label="Delete image"
+                  title="Delete image"
+                >
+                  <img
+                    src="/icons/photo_edit_icons/close.png"
+                    alt="Delete image"
+                    className="h-6 w-6 object-contain"
+                  />
+                </button>
+              </div>
             )}
           </div>
 
