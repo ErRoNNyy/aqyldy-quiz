@@ -143,23 +143,32 @@ export function DashboardPanel() {
   return (
     <AuthenticatedLayout username={username}>
       <div className="flex-1 bg-[#E0EFF0] p-6">
-      <div className="mb-5 flex max-w-md gap-3">
-        {filters.map((f) => (
-          <button
-            key={f.key}
-            type="button"
-            onClick={() => setFilter(f.key)}
-            className={clsx(
-              "flex-1 rounded-lg px-3 py-1.5 text-center text-sm font-semibold transition sm:px-4",
-              filter === f.key
-                ? "bg-[#FFA05F] text-white"
-                : "border border-[#86D5DE] bg-[#D9EDED] text-[#008F9F] hover:bg-white/50",
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div className="flex max-w-md flex-1 gap-3">
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              className={clsx(
+                "flex-1 rounded-lg px-3 py-1.5 text-center text-sm font-semibold transition sm:px-4",
+                filter === f.key
+                  ? "bg-[#FFA05F] text-white"
+                  : "border border-[#86D5DE] bg-[#D9EDED] text-[#008F9F] hover:bg-white/50",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
 
+        <button
+          type="button"
+          onClick={() => router.push("/dashboard/edit")}
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-[#FF7C22] px-10 py-1.5 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02]"
+        >
+          New quiz
+        </button>
       </div>
 
       {status && <p className="mb-4 text-sm font-medium text-red-600">{status}</p>}
