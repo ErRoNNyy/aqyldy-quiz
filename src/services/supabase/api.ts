@@ -17,6 +17,12 @@ export interface CreateQuestionPayload {
   text: string;
   timeLimit: number;
   imageFile?: File | null;
+  /**
+   * URL of an already-uploaded image to keep. Ignored when `imageFile` is set
+   * (a new upload replaces it). On update, a null/undefined value with no new
+   * file removes the existing image.
+   */
+  existingImageUrl?: string | null;
   answers: Array<{ text: string; isCorrect: boolean }>;
 }
 
@@ -401,7 +407,7 @@ export async function updateQuestion(
   quizId: string,
   payload: CreateQuestionPayload,
 ) {
-  let imageUrl: string | null = null;
+  let imageUrl: string | null = payload.existingImageUrl ?? null;
   if (payload.imageFile) {
     imageUrl = await uploadQuestionImage(quizId, payload.imageFile);
   }
@@ -409,8 +415,8 @@ export async function updateQuestion(
   const updateData: Record<string, unknown> = {
     text: payload.text,
     time_limit: payload.timeLimit,
+    image_url: imageUrl,
   };
-  if (imageUrl) updateData.image_url = imageUrl;
 
   const { error: qErr } = await supabase
     .from("questions")

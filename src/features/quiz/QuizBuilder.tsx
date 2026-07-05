@@ -74,6 +74,8 @@ export function QuizBuilder() {
   const [quizTitle, setQuizTitle] = useState("");
   const [questionText, setQuestionText] = useState("");
   const [questionImage, setQuestionImage] = useState<File | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const [timeLimit, setTimeLimit] = useState(20);
   const [draftAnswers, setDraftAnswers] = useState<DraftAnswer[]>(emptyAnswers());
   const [reorderOpen, setReorderOpen] = useState(false);
@@ -81,7 +83,10 @@ export function QuizBuilder() {
   const [titleEditing, setTitleEditing] = useState(false);
 
   const onDrop = useCallback((files: File[]) => {
-    if (files[0]) setQuestionImage(files[0]);
+    if (files[0]) {
+      setQuestionImage(files[0]);
+      setExistingImageUrl(null);
+    }
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -89,6 +94,16 @@ export function QuizBuilder() {
     accept: { "image/*": [".png", ".jpg", ".jpeg", ".webp"] },
     maxFiles: 1,
   });
+
+  useEffect(() => {
+    if (!questionImage) {
+      setFilePreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(questionImage);
+    setFilePreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [questionImage]);
 
   const loadQuestions = useCallback(async (quizId: string) => {
     const q = await getQuizQuestions(quizId);
@@ -143,6 +158,7 @@ export function QuizBuilder() {
     setEditingId(null);
     setQuestionText("");
     setQuestionImage(null);
+    setExistingImageUrl(null);
     setTimeLimit(20);
     setDraftAnswers(emptyAnswers());
     setStatus("");
@@ -152,6 +168,7 @@ export function QuizBuilder() {
     setEditingId(q.id);
     setQuestionText(q.text);
     setQuestionImage(null);
+    setExistingImageUrl(q.image_url);
     setTimeLimit(q.time_limit);
     const qAnswers = answersMap[q.id] ?? [];
     setDraftAnswers(
@@ -213,6 +230,7 @@ export function QuizBuilder() {
         text: questionText.trim(),
         timeLimit,
         imageFile: questionImage,
+        existingImageUrl,
         answers: draftAnswers
           .filter((a) => a.text.trim())
           .map((a) => ({ text: a.text.trim(), isCorrect: a.isCorrect })),
@@ -577,24 +595,41 @@ export function QuizBuilder() {
           />
 
           {/* Image upload */}
-          <div
-            {...getRootProps()}
-            className="flex w-full max-w-2xl h-full max-h-84 cursor-pointer flex-col items-center justify-center rounded-lg border border-zinc-300 bg-white py-14 transition hover:border-cyan-400"
-          >
-            <input {...getInputProps()} />
-            {questionImage ? (
-              <img
-                src={URL.createObjectURL(questionImage)}
-                alt="Preview"
-                className="max-h-36 rounded-lg"
-              />
-            ) : (
-              <>
-                <span className="mb-1 text-2xl text-black">+</span>
-                <span className="text-sm font-semibold text-black">
-                  {isDragActive ? "Drop image here..." : "Upload image"}
-                </span>
-              </>
+          <div className="relative w-full max-w-2xl">
+            <div
+              {...getRootProps()}
+              className="flex w-full h-full max-h-84 cursor-pointer flex-col items-center justify-center rounded-lg border border-zinc-300 bg-white py-14 transition hover:border-cyan-400"
+            >
+              <input {...getInputProps()} />
+              {filePreview || existingImageUrl ? (
+                <img
+                  src={filePreview ?? existingImageUrl ?? undefined}
+                  alt="Preview"
+                  className="max-h-36 rounded-lg"
+                />
+              ) : (
+                <>
+                  <span className="mb-1 text-2xl text-black">+</span>
+                  <span className="text-sm font-semibold text-black">
+                    {isDragActive ? "Drop image here..." : "Upload image"}
+                  </span>
+                </>
+              )}
+            </div>
+            {(filePreview || existingImageUrl) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuestionImage(null);
+                  setExistingImageUrl(null);
+                }}
+                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
+                aria-label="Remove image"
+              >
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+              </button>
             )}
           </div>
 
