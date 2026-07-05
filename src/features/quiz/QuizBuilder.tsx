@@ -603,8 +603,10 @@ export function QuizBuilder() {
               {...getRootProps()}
               onClick={hasImage ? undefined : open}
               className={clsx(
-                "flex h-full max-h-84 flex-1 flex-col items-center justify-center rounded-lg border border-zinc-300 bg-white py-14 transition hover:border-cyan-400",
-                !hasImage && "cursor-pointer",
+                "flex flex-col items-center justify-center overflow-hidden rounded-lg border border-zinc-300 bg-white transition hover:border-cyan-400",
+                hasImage
+                  ? "w-fit"
+                  : "h-full max-h-84 flex-1 cursor-pointer py-14",
               )}
             >
               <input {...getInputProps()} />
@@ -612,7 +614,7 @@ export function QuizBuilder() {
                 <img
                   src={filePreview ?? existingImageUrl ?? undefined}
                   alt="Preview"
-                  className="max-h-36 rounded-lg"
+                  className="block max-h-84 w-auto rounded-lg"
                 />
               ) : (
                 <>
