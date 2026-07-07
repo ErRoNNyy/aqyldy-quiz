@@ -81,6 +81,7 @@ export function QuizBuilder() {
   const [reorderOpen, setReorderOpen] = useState(false);
   const [reorderList, setReorderList] = useState<Question[]>([]);
   const [titleEditing, setTitleEditing] = useState(false);
+  const [savePromptOpen, setSavePromptOpen] = useState(false);
 
   const onDrop = useCallback((files: File[]) => {
     if (files[0]) {
@@ -112,9 +113,10 @@ export function QuizBuilder() {
     const q = await getQuizQuestions(quizId);
     setQuestions(q);
     const ids = q.map((r) => r.id);
+    let grouped: Record<string, Answer[]> = {};
     if (ids.length > 0) {
       const a = await getAnswersByQuestionIds(ids);
-      const grouped = a.reduce<Record<string, Answer[]>>((acc, r) => {
+      grouped = a.reduce<Record<string, Answer[]>>((acc, r) => {
         (acc[r.question_id] ??= []).push(r);
         return acc;
       }, {});
@@ -122,6 +124,7 @@ export function QuizBuilder() {
     } else {
       setAnswersMap({});
     }
+    return { questions: q, answersMap: grouped };
   }, []);
 
   useEffect(() => {
@@ -150,7 +153,10 @@ export function QuizBuilder() {
         if (found) {
           setQuiz(found);
           setQuizTitle(found.title);
-          await loadQuestions(found.id);
+          const loaded = await loadQuestions(found.id);
+          if (loaded.questions.length > 0) {
+            selectQuestion(loaded.questions[0], loaded.answersMap);
+          }
         }
       }
     }
@@ -167,13 +173,13 @@ export function QuizBuilder() {
     setStatus("");
   }
 
-  function selectQuestion(q: Question) {
+  function selectQuestion(q: Question, answers?: Record<string, Answer[]>) {
     setEditingId(q.id);
     setQuestionText(q.text);
     setQuestionImage(null);
     setExistingImageUrl(q.image_url);
     setTimeLimit(q.time_limit);
-    const qAnswers = answersMap[q.id] ?? [];
+    const qAnswers = (answers ?? answersMap)[q.id] ?? [];
     setDraftAnswers(
       [0, 1, 2, 3].map((i) => ({
         text: qAnswers[i]?.text ?? "",
@@ -181,6 +187,41 @@ export function QuizBuilder() {
       })),
     );
     setStatus("");
+  }
+
+  function hasUnsavedChanges(): boolean {
+    const answersFilled = draftAnswers.some((a) => a.text.trim());
+
+    if (!editingId) {
+      // New (unsaved) question: dirty if the user typed/added anything.
+      return Boolean(
+        questionText.trim() ||
+          answersFilled ||
+          questionImage ||
+          existingImageUrl ||
+          timeLimit !== 20,
+      );
+    }
+
+    const original = questions.find((q) => q.id === editingId);
+    if (!original) return false;
+
+    if (questionText.trim() !== original.text.trim()) return true;
+    if (timeLimit !== original.time_limit) return true;
+    // A newly picked file, or a removed/kept image differing from the saved one.
+    if (questionImage) return true;
+    if ((existingImageUrl ?? null) !== (original.image_url ?? null)) return true;
+
+    const originalAnswers = answersMap[editingId] ?? [];
+    for (let i = 0; i < 4; i++) {
+      const draft = draftAnswers[i];
+      const orig = originalAnswers[i];
+      const draftText = draft?.text.trim() ?? "";
+      const origText = orig?.text.trim() ?? "";
+      if (draftText !== origText) return true;
+      if ((draft?.isCorrect ?? false) !== (orig?.is_correct ?? false)) return true;
+    }
+    return false;
   }
 
   function validate(): string | null {
@@ -218,13 +259,13 @@ export function QuizBuilder() {
     }
   }
 
-  async function handleSaveQuestion() {
+  async function handleSaveQuestion(): Promise<boolean> {
     const err = validate();
     if (err) {
       setStatus(err);
-      return;
+      return false;
     }
-    if (!quiz) return;
+    if (!quiz) return false;
 
     setLoading(true);
     setStatus("");
@@ -248,8 +289,10 @@ export function QuizBuilder() {
       }
       await loadQuestions(quiz.id);
       clearEditor();
+      return true;
     } catch (e) {
       setStatus((e as Error).message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -294,15 +337,8 @@ export function QuizBuilder() {
     }
   }
 
-  async function handlePublish() {
-    if (!quiz || !userId) {
-      setStatus("Save at least one question first.");
-      return;
-    }
-    if (questions.length === 0) {
-      setStatus("Add at least one question before publishing.");
-      return;
-    }
+  async function publishNow() {
+    if (!quiz) return;
     setLoading(true);
     setStatus("");
     try {
@@ -313,6 +349,35 @@ export function QuizBuilder() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handlePublish() {
+    if (!quiz || !userId) {
+      setStatus("Save at least one question first.");
+      return;
+    }
+    if (questions.length === 0) {
+      setStatus("Add at least one question before publishing.");
+      return;
+    }
+    if (hasUnsavedChanges()) {
+      setSavePromptOpen(true);
+      return;
+    }
+    await publishNow();
+  }
+
+  async function handleSaveAndPublish() {
+    const saved = await handleSaveQuestion();
+    if (!saved) return;
+    setSavePromptOpen(false);
+    await publishNow();
+  }
+
+  async function handleDiscardAndPublish() {
+    clearEditor();
+    setSavePromptOpen(false);
+    await publishNow();
   }
 
   async function handleSaveTitle() {
@@ -847,6 +912,52 @@ export function QuizBuilder() {
                 className="rounded-md bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600 hover:scale-[1.02] disabled:opacity-50"
               >
                 {loading ? "Saving..." : "Save Order"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unsaved changes prompt (before publishing) */}
+      {savePromptOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setSavePromptOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="mb-1 text-lg font-bold text-zinc-900">Unsaved changes</h2>
+            <p className="mb-5 text-sm text-zinc-500">
+              You have unsaved changes to this question. Do you want to save them
+              before publishing?
+            </p>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setSavePromptOpen(false)}
+                className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:scale-[1.02]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDiscardAndPublish()}
+                disabled={loading}
+                className="rounded-md bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-300 hover:scale-[1.02] disabled:opacity-50"
+              >
+                Discard &amp; publish
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleSaveAndPublish()}
+                disabled={loading}
+                className="rounded-md bg-[#008F9F] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#007080] hover:scale-[1.02] disabled:opacity-50"
+              >
+                {loading ? "Saving..." : "Save & publish"}
               </button>
             </div>
           </div>
