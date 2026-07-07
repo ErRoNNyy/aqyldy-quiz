@@ -693,7 +693,12 @@ export function QuizBuilder() {
           />
 
           {/* Image upload */}
-          <div className="flex w-full max-w-2xl items-start gap-3">
+          <div
+            className={clsx(
+              "flex w-full max-w-2xl items-start gap-3",
+              hasImage && "justify-center",
+            )}
+          >
             <div
               {...getRootProps()}
               onClick={hasImage ? undefined : open}
