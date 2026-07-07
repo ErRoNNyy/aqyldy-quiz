@@ -338,8 +338,8 @@ export function PlayPanel() {
 
   /* ---- ANSWERING ---- */
   if (phase === "answering" && question) {
-    const tl = question.time_limit ?? 30;
-    const remainPct = tl > 0 ? (ansTimer / tl) * 100 : 0;
+    // const tl = question.time_limit ?? 30;
+    // const remainPct = tl > 0 ? (ansTimer / tl) * 100 : 0;
 
     return (
       <div className="flex min-h-screen flex-col bg-background">
@@ -366,12 +366,12 @@ export function PlayPanel() {
                   {question.text}
                 </p>
               </div>
-              <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden rounded-full bg-white/30">
+              {/* <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden rounded-full bg-white/30">
                 <div
                   className="h-full rounded-full bg-orange-500 transition-all duration-1000 ease-linear"
                   style={{ width: `${remainPct}%` }}
                 />
-              </div>
+              </div> */}
             </div>
 
             {/* Right: question badge + timer */}

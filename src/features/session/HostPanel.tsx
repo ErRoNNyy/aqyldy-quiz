@@ -478,8 +478,8 @@ export function HostPanel() {
 
   /* ---- ANSWERING ---- */
   if (phase === "answering" && curQ) {
-    const tl = curQ.time_limit ?? 30;
-    const remainPct = tl > 0 ? (ansTimer / tl) * 100 : 0;
+    // const tl = curQ.time_limit ?? 30;
+    // const remainPct = tl > 0 ? (ansTimer / tl) * 100 : 0;
 
     return (
       <div className="flex min-h-screen flex-col bg-background">
@@ -504,12 +504,12 @@ export function HostPanel() {
               <div className="w-full max-w-2xl rounded-xl bg-white px-6 py-4 text-center shadow-lg">
                 <p className="text-xl font-bold text-zinc-800">{curQ.text}</p>
               </div>
-              <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden rounded-full bg-white/30">
+              {/* <div className="mt-2 h-2 w-full max-w-2xl overflow-hidden rounded-full bg-white/30">
                 <div
                   className="h-full rounded-full bg-orange-500 transition-all duration-1000 ease-linear"
                   style={{ width: `${remainPct}%` }}
                 />
-              </div>
+              </div> */}
             </div>
 
             {/* Right: question badge + timer */}
