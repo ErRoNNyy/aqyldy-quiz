@@ -10,6 +10,7 @@ import {
 } from "@/src/components/layout/SiteHeader";
 import {
   getAnswersForQuestion,
+  getCorrectCounts,
   getLeaderboard,
   getQuestionById,
   getQuizById,
@@ -44,6 +45,7 @@ export function PlayPanel() {
 
   const [session, setSession] = useState<Session | null>(null);
   const [quizTitle, setQuizTitle] = useState<string>("");
+  const [correctMap, setCorrectMap] = useState<Record<string, number>>({});
   const [participants, setParticipants] = useState<SessionParticipant[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [question, setQuestion] = useState<Question | null>(null);
@@ -102,7 +104,10 @@ export function PlayPanel() {
     (s: Session) => {
       setSession(s);
       if (s.status === "completed") {
-        if (sessionId) void getLeaderboard(sessionId).then(setLeaderboard);
+        if (sessionId) {
+          void getLeaderboard(sessionId).then(setLeaderboard);
+          void getCorrectCounts(sessionId).then(setCorrectMap);
+        }
         setPhase("finalLeaderboard");
         return;
       }
@@ -155,6 +160,7 @@ export function PlayPanel() {
       void getQuizQuestions(s.quiz_id).then(setQuestions);
       if (s.status === "completed") {
         setLeaderboard(await getLeaderboard(sessionId));
+        setCorrectMap(await getCorrectCounts(sessionId));
         setPhase("finalLeaderboard");
         return;
       }
@@ -596,9 +602,9 @@ export function PlayPanel() {
     const top3 = leaderboard.slice(0, 3);
     const podiumOrder = [top3[1], top3[0], top3[2]];
     const podiumConfig = [
-      { place: 2, medal: "/places/silver_2.png", height: "h-[345px]", width: "w-[265px]", medalSize: "h-[92px] w-[92px]", avatarSize: "h-[122px] w-[122px]" },
-      { place: 1, medal: "/places/gold 1.png", height: "h-[445px]", width: "w-[265px]", medalSize: "h-[92px] w-[92px]", avatarSize: "h-[142px] w-[142px]" },
-      { place: 3, medal: "/places/bronze_3.png", height: "h-[270px]", width: "w-[265px]", medalSize: "h-[88px] w-[88px]", avatarSize: "h-[140px] w-[140px]" },
+      { place: 2, medal: "/places/silver_2.png", height: "h-[345px]", width: "w-[265px]", medalSize: "h-[150px] w-[150px]", avatarSize: "h-[122px] w-[122px]" },
+      { place: 1, medal: "/places/gold 1.png", height: "h-[545px]", width: "w-[265px]", medalSize: "h-[170px] w-[170px]", avatarSize: "h-[142px] w-[142px]" },
+      { place: 3, medal: "/places/bronze_3.png", height: "h-[270px]", width: "w-[265px]", medalSize: "h-[140px] w-[140px]", avatarSize: "h-[140px] w-[140px]" },
     ];
     const me = participantId ? leaderboard.find((p) => p.id === participantId) : null;
     const myRank = me ? leaderboard.findIndex((p) => p.id === participantId) + 1 : null;
@@ -636,26 +642,12 @@ export function PlayPanel() {
                   <div className="mb-3 rounded-[10px] bg-[#f2f2f2] px-8 py-2.5 shadow-md">
                     <p className="text-[22px] font-medium text-[#1f1f1f]">{entry.nickname}</p>
                   </div>
-                  <div className={`flex ${cfg.width} ${cfg.height} flex-col items-center bg-[#5b9faa] px-6 pt-6 shadow-[8px_8px_0_rgba(0,0,0,0.08)]`}>
-                    <div className={`mb-5 overflow-hidden rounded-lg bg-white ${cfg.avatarSize}`}>
-                      {entry.avatar_url ? (
-                        <img
-                          src={entry.avatar_url}
-                          alt={entry.nickname}
-                          className={
-                            cfg.place === 3
-                              ? "h-full w-full scale-125 object-cover object-center"
-                              : "h-full w-full object-contain"
-                          }
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-[#e5e5e5] text-3xl font-bold text-zinc-500">
-                          {entry.nickname?.[0]?.toUpperCase() ?? "?"}
-                        </div>
-                      )}
-                    </div>
+                  <div className={`flex ${cfg.width} ${cfg.height} flex-col items-center bg-[#FF6902] px-6 pt-6 shadow-[8px_8px_0_rgba(0,0,0,0.08)]`}>
                     <img src={cfg.medal} alt={`Place ${cfg.place}`} className={`${cfg.medalSize} object-contain`} />
-                    <p className="mb-6 mt-3 text-[32px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>
+                    <p className="mt-3 text-[25px] font-bold leading-none text-white drop-shadow-sm">{entry.score}</p>
+                    <p className="mb-6 mt-2 text-[25px] font-bold leading-none text-white drop-shadow-sm">
+                      {correctMap[entry.id] ?? 0} out of {questions.length}
+                    </p>
                   </div>
                 </div>
               );
