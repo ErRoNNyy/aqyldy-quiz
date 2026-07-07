@@ -12,6 +12,7 @@ import {
   getAnswersForQuestion,
   getLeaderboard,
   getQuestionById,
+  getQuizById,
   getQuizQuestions,
   getSession,
   getSessionParticipants,
@@ -42,6 +43,7 @@ export function PlayPanel() {
   const participantId = params.get("participant");
 
   const [session, setSession] = useState<Session | null>(null);
+  const [quizTitle, setQuizTitle] = useState<string>("");
   const [participants, setParticipants] = useState<SessionParticipant[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [question, setQuestion] = useState<Question | null>(null);
@@ -149,6 +151,7 @@ export function PlayPanel() {
       }
       const s = await getSession(sessionId);
       setSession(s);
+      void getQuizById(s.quiz_id).then((q) => setQuizTitle(q.title));
       void getQuizQuestions(s.quiz_id).then(setQuestions);
       if (s.status === "completed") {
         setLeaderboard(await getLeaderboard(sessionId));
@@ -241,14 +244,17 @@ export function PlayPanel() {
     return (
       <div className="min-h-screen bg-background">
         {headerBar}
-        <main className="flex min-h-[calc(100vh-3.25rem)] px-10 py-8">
+        <main className="flex min-h-[calc(100vh-3.25rem)] px-5 py-8">
           <div className="flex flex-1 flex-col items-center">
-            <div className="relative mb-8 w-full max-w-[525px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
+            <div className="relative mb-8 w-full max-w-[400px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
               <p className="text-[28px] leading-none text-black">Game CODE</p>
-              <p className="mt-4 text-[86px] font-normal leading-none text-black">
+              <p className="mt-4 text-[70px] font-normal leading-none text-black">
                 {session?.code ?? "..."}
               </p>
             </div>
+            <h2 className="mb-14 text-center text-[25px] font-extrabold text-white">
+              {quizTitle || "Quiz"}
+            </h2>
             <div className="flex flex-wrap justify-center gap-6">
               {participants.map((p) => (
                 <div
@@ -293,14 +299,14 @@ export function PlayPanel() {
           </div>
           <div className="flex w-[250px] shrink-0 flex-col items-center justify-center gap-12">
             <div className="text-center">
-              <p className="text-[22px] font-bold text-white">Participants</p>
-              <p className="text-[64px] font-extrabold leading-none text-white">
+              <p className="text-[24px] font-bold text-sm text-white">Participants</p>
+              <p className="text-[44px] font-bold text-sm leading-none text-white">
                 {participants.length}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-[22px] font-bold text-white">Waiting</p>
-              <p className="text-[64px] font-extrabold leading-none text-white">
+              <p className="text-[24px] font-bold text-white">Waiting</p>
+              <p className="text-[40px] font-extrabold leading-none text-white">
                 {fmtTime(waitSeconds)}
               </p>
             </div>

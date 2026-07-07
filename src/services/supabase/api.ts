@@ -197,6 +197,18 @@ export async function getProfileMaybe(userId: string): Promise<UserProfile | nul
   return data;
 }
 
+export async function getQuizById(quizId: string) {
+  const { data, error } = await supabase
+    .from("quizzes")
+    .select("*")
+    .eq("id", quizId)
+    .single<Quiz>();
+  if (error) {
+    throw error;
+  }
+  return data;
+}
+
 export async function getMyQuizzes(userId: string) {
   const { data, error } = await supabase
     .from("quizzes")

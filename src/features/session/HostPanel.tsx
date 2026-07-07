@@ -362,7 +362,7 @@ export function HostPanel() {
         {header}
         <main className="flex min-h-[calc(100vh-3.25rem)] px-10 py-8">
           <div className="flex flex-1 flex-col items-center">
-            <div className="relative mb-8 w-full max-w-[525px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
+            <div className="relative mb-8 w-full max-w-[450px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
               <button
                 onClick={copyCode}
                 className="absolute right-4 top-4 rounded-xl bg-orange-500 px-5 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
@@ -370,11 +370,11 @@ export function HostPanel() {
                 Copy code
               </button>
               <p className="text-[28px] leading-none text-black">Game CODE</p>
-              <p className="mt-4 text-[86px] font-normal leading-none text-black">
+              <p className="mt-4 text-[70px] font-normal leading-none text-black">
                 {session.code}
               </p>
             </div>
-            <h2 className="mb-14 text-center text-[38px] font-extrabold text-white">
+            <h2 className="mb-14 text-center text-[25px] font-extrabold text-white">
               {selectedQuiz?.title ?? "Quiz"}
             </h2>
             <div className="flex flex-wrap justify-center gap-6">
@@ -429,13 +429,13 @@ export function HostPanel() {
             </button>
             <div className="text-center">
               <p className="text-[24px] font-bold text-white">Participants</p>
-              <p className="mt-1 text-[58px] font-bold leading-none text-white">
+              <p className="mt-1 text-[40px] font-bold leading-none text-white">
                 {participants.length}
               </p>
             </div>
             <div className="text-center">
               <p className="text-[24px] font-bold text-white">Waiting</p>
-              <p className="mt-1 text-[58px] font-bold leading-none text-white">
+              <p className="mt-1 text-[40px] font-bold leading-none text-white">
                 {fmtTime(waitSec)}
               </p>
             </div>
