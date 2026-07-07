@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import { Reorder } from "framer-motion";
@@ -77,6 +77,8 @@ export function QuizBuilder() {
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [timeLimit, setTimeLimit] = useState(20);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [draftAnswers, setDraftAnswers] = useState<DraftAnswer[]>(emptyAnswers());
   const [reorderOpen, setReorderOpen] = useState(false);
   const [reorderList, setReorderList] = useState<Question[]>([]);
@@ -110,6 +112,18 @@ export function QuizBuilder() {
     setFilePreview(url);
     return () => URL.revokeObjectURL(url);
   }, [questionImage]);
+
+  useEffect(() => {
+    if (!coverImage) {
+      setCoverPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(coverImage);
+    setCoverPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [coverImage]);
+
+  const coverSrc = coverPreview ?? quiz?.image_url ?? null;
 
   const loadQuestions = useCallback(async (quizId: string) => {
     const q = await getQuizQuestions(quizId);
@@ -250,9 +264,10 @@ export function QuizBuilder() {
     setLoading(true);
     setStatus("");
     try {
-      const newQuiz = await createQuiz(userId, quizTitle.trim(), "");
+      const newQuiz = await createQuiz(userId, quizTitle.trim(), "", coverImage);
       setQuiz(newQuiz);
       setQuizTitle(newQuiz.title);
+      setCoverImage(null);
       router.replace(`/dashboard/edit?quiz=${newQuiz.id}`);
     } catch (e) {
       setStatus((e as Error).message);
@@ -416,15 +431,66 @@ export function QuizBuilder() {
     setLoading(true);
     setStatus("");
     try {
-      await updateQuiz(quiz.id, { title: t });
-      setQuiz({ ...quiz, title: t });
-      setQuizTitle(t);
+      const updated = await updateQuiz(quiz.id, {
+        title: t,
+        imageFile: coverImage,
+        imageUrl: quiz.image_url,
+      });
+      setQuiz(updated);
+      setQuizTitle(updated.title);
+      setCoverImage(null);
       setTitleEditing(false);
     } catch (e) {
       setStatus((e as Error).message);
     } finally {
       setLoading(false);
     }
+  }
+
+  function onCoverPick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) setCoverImage(file);
+    e.target.value = "";
+  }
+
+  function removeCover() {
+    setCoverImage(null);
+    if (quiz) setQuiz({ ...quiz, image_url: null });
+  }
+
+  function renderCoverPicker() {
+    return (
+      <div className="mb-6 flex flex-col items-center gap-3">
+        {coverSrc ? (
+          <img
+            src={coverSrc}
+            alt="Quiz cover"
+            className="h-28 w-28 rounded-full object-cover shadow-md"
+          />
+        ) : (
+          <div className="flex h-28 w-28 items-center justify-center rounded-full bg-zinc-200 text-zinc-400">
+            <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+            </svg>
+          </div>
+        )}
+        <div className="flex items-center gap-3">
+          <label className="cursor-pointer rounded-md bg-[#1fb6c4] px-4 py-1.5 text-xs font-bold text-white transition hover:bg-[#179aa6] hover:scale-[1.02]">
+            {coverSrc ? "Change image" : "Add image"}
+            <input type="file" accept="image/*" className="hidden" onChange={onCoverPick} />
+          </label>
+          {coverSrc && (
+            <button
+              type="button"
+              onClick={removeCover}
+              className="rounded-md bg-red-100 px-4 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-200 hover:scale-[1.02]"
+            >
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+    );
   }
 
   function openReorder() {
@@ -522,6 +588,7 @@ export function QuizBuilder() {
           {/* MAIN CONTENT */}
           <main className="flex flex-1 flex-col items-center justify-center px-6">
             <h2 className="mb-4 text-lg font-bold text-zinc-800">Quiz title</h2>
+            {renderCoverPicker()}
             <input
               value={quizTitle}
               onChange={(e) => setQuizTitle(e.target.value)}
@@ -561,6 +628,7 @@ export function QuizBuilder() {
         />
         <main className="flex flex-1 flex-col items-center justify-center px-6">
           <h2 className="mb-4 text-lg font-bold text-zinc-800">Quiz title</h2>
+          {renderCoverPicker()}
           <input
             value={quiz.title}
             autoFocus

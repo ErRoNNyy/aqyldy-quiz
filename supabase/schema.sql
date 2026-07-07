@@ -16,6 +16,7 @@ create table if not exists public.quizzes (
   user_id uuid not null references public.users(id) on delete cascade,
   title text not null,
   description text,
+  image_url text,
   is_published boolean not null default false,
   is_hosted boolean not null default false,
   created_at timestamptz not null default now(),

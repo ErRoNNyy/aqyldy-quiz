@@ -222,7 +222,12 @@ export async function getMyQuizzes(userId: string) {
   return data;
 }
 
-export async function createQuiz(userId: string, title: string, description: string) {
+export async function createQuiz(
+  userId: string,
+  title: string,
+  description: string,
+  imageFile?: File | null,
+) {
   const { data, error } = await supabase
     .from("quizzes")
     .insert({
@@ -236,18 +241,44 @@ export async function createQuiz(userId: string, title: string, description: str
   if (error) {
     throw error;
   }
+
+  if (imageFile) {
+    const imageUrl = await uploadQuizCoverImage(data.id, imageFile);
+    const { data: updated, error: updateError } = await supabase
+      .from("quizzes")
+      .update({ image_url: imageUrl })
+      .eq("id", data.id)
+      .select("*")
+      .single<Quiz>();
+    if (updateError) {
+      throw updateError;
+    }
+    return updated;
+  }
+
   return data;
 }
 
 export async function updateQuiz(
   quizId: string,
-  updates: { title?: string; description?: string | null },
+  updates: {
+    title?: string;
+    description?: string | null;
+    imageFile?: File | null;
+    imageUrl?: string | null;
+  },
 ) {
   const patch: Record<string, string | null> = {
     updated_at: new Date().toISOString(),
   };
   if (updates.title !== undefined) patch.title = updates.title;
   if (updates.description !== undefined) patch.description = updates.description;
+
+  if (updates.imageFile) {
+    patch.image_url = await uploadQuizCoverImage(quizId, updates.imageFile);
+  } else if (updates.imageUrl !== undefined) {
+    patch.image_url = updates.imageUrl;
+  }
 
   const { data, error } = await supabase
     .from("quizzes")
@@ -347,6 +378,28 @@ export async function getAnswersByQuestionIds(questionIds: string[]) {
     throw error;
   }
   return data;
+}
+
+async function uploadQuizCoverImage(quizId: string, file: File) {
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1280,
+    useWebWorker: true,
+  });
+  const extension = compressed.name.split(".").pop() ?? "jpg";
+  const path = `quiz_${quizId}/cover_${Date.now()}.${extension}`;
+
+  const { data, error } = await supabase.storage
+    .from("quiz-images")
+    .upload(path, compressed, { cacheControl: "3600", upsert: true });
+  if (error) {
+    throw error;
+  }
+
+  const { data: publicData } = supabase.storage
+    .from("quiz-images")
+    .getPublicUrl(data.path);
+  return publicData.publicUrl;
 }
 
 async function uploadQuestionImage(quizId: string, file: File) {
