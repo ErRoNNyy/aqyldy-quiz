@@ -30,7 +30,7 @@ import { profileSetupUrl } from "@/src/services/supabase/profileRoutes";
 import { useSessionRealtime } from "@/src/hooks/useSessionRealtime";
 import { useSessionStore } from "@/src/store/sessionStore";
 import { isSupabaseConfigured } from "@/src/services/supabase/client";
-// import CountdownBar from "@/src/components/ui/CountdownBar";
+import CountdownBar from "@/src/components/ui/CountdownBar";
 import type {
   Answer,
   Question,
@@ -470,7 +470,7 @@ export function HostPanel() {
               style={{ maxWidth: 500, maxHeight: 500, objectFit: "contain" }}
             />
           )}
-          {/* <CountdownBar key={qIdx} duration={3000} /> */}
+          <CountdownBar key={qIdx} duration={3000} />
         </main>
       </div>
     );

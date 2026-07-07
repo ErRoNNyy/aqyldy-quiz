@@ -23,7 +23,7 @@ import {
 } from "@/src/services/supabase/api";
 import { useSessionRealtime } from "@/src/hooks/useSessionRealtime";
 import { useSessionStore } from "@/src/store/sessionStore";
-// import CountdownBar from "@/src/components/ui/CountdownBar";
+import CountdownBar from "@/src/components/ui/CountdownBar";
 import type { Answer, Question, Session, SessionParticipant } from "@/src/types/models";
 
 type GamePhase =
@@ -342,7 +342,7 @@ export function PlayPanel() {
               style={{ maxWidth: 500, maxHeight: 500, objectFit: "contain" }}
             />
           )}
-          {/* <CountdownBar key={question.id} duration={3000} /> */}
+          <CountdownBar key={question.id} duration={3000} />
         </main>
       </div>
     );
