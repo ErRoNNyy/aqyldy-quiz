@@ -81,7 +81,9 @@ export function QuizBuilder() {
   const [reorderOpen, setReorderOpen] = useState(false);
   const [reorderList, setReorderList] = useState<Question[]>([]);
   const [titleEditing, setTitleEditing] = useState(false);
-  const [savePromptOpen, setSavePromptOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<null | "publish" | "exit">(
+    null,
+  );
 
   const onDrop = useCallback((files: File[]) => {
     if (files[0]) {
@@ -351,6 +353,18 @@ export function QuizBuilder() {
     }
   }
 
+  function exitNow() {
+    router.push("/dashboard");
+  }
+
+  async function runPendingAction(action: "publish" | "exit") {
+    if (action === "publish") {
+      await publishNow();
+    } else {
+      exitNow();
+    }
+  }
+
   async function handlePublish() {
     if (!quiz || !userId) {
       setStatus("Save at least one question first.");
@@ -361,23 +375,35 @@ export function QuizBuilder() {
       return;
     }
     if (hasUnsavedChanges()) {
-      setSavePromptOpen(true);
+      setPendingAction("publish");
       return;
     }
     await publishNow();
   }
 
-  async function handleSaveAndPublish() {
-    const saved = await handleSaveQuestion();
-    if (!saved) return;
-    setSavePromptOpen(false);
-    await publishNow();
+  function handleExit() {
+    if (hasUnsavedChanges()) {
+      setPendingAction("exit");
+      return;
+    }
+    exitNow();
   }
 
-  async function handleDiscardAndPublish() {
+  async function handleSaveAndContinue() {
+    const action = pendingAction;
+    if (!action) return;
+    const saved = await handleSaveQuestion();
+    if (!saved) return;
+    setPendingAction(null);
+    await runPendingAction(action);
+  }
+
+  async function handleDiscardAndContinue() {
+    const action = pendingAction;
+    if (!action) return;
     clearEditor();
-    setSavePromptOpen(false);
-    await publishNow();
+    setPendingAction(null);
+    await runPendingAction(action);
   }
 
   async function handleSaveTitle() {
@@ -565,7 +591,11 @@ export function QuizBuilder() {
   return (
     <div className="flex h-screen flex-col bg-[#E0EFF0]">
       <SiteHeader
-        right={<SiteHeaderActionLink href="/dashboard">Exit</SiteHeaderActionLink>}
+        right={
+          <SiteHeaderActionButton onClick={handleExit}>
+            Exit
+          </SiteHeaderActionButton>
+        }
       />
 
       <div className="flex min-h-0 flex-1">
@@ -918,11 +948,11 @@ export function QuizBuilder() {
         </div>
       )}
 
-      {/* Unsaved changes prompt (before publishing) */}
-      {savePromptOpen && (
+      {/* Unsaved changes prompt (before publishing or exiting) */}
+      {pendingAction && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => setSavePromptOpen(false)}
+          onClick={() => setPendingAction(null)}
         >
           <div
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
@@ -933,31 +963,35 @@ export function QuizBuilder() {
             <h2 className="mb-1 text-lg font-bold text-zinc-900">Unsaved changes</h2>
             <p className="mb-5 text-sm text-zinc-500">
               You have unsaved changes to this question. Do you want to save them
-              before publishing?
+              before {pendingAction === "publish" ? "publishing" : "leaving"}?
             </p>
             <div className="flex flex-wrap justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setSavePromptOpen(false)}
+                onClick={() => setPendingAction(null)}
                 className="rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 hover:scale-[1.02]"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => void handleDiscardAndPublish()}
+                onClick={() => void handleDiscardAndContinue()}
                 disabled={loading}
                 className="rounded-md bg-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-300 hover:scale-[1.02] disabled:opacity-50"
               >
-                Discard &amp; publish
+                {pendingAction === "publish" ? "Discard & publish" : "Discard & leave"}
               </button>
               <button
                 type="button"
-                onClick={() => void handleSaveAndPublish()}
+                onClick={() => void handleSaveAndContinue()}
                 disabled={loading}
                 className="rounded-md bg-[#008F9F] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#007080] hover:scale-[1.02] disabled:opacity-50"
               >
-                {loading ? "Saving..." : "Save & publish"}
+                {loading
+                  ? "Saving..."
+                  : pendingAction === "publish"
+                    ? "Save & publish"
+                    : "Save & leave"}
               </button>
             </div>
           </div>
