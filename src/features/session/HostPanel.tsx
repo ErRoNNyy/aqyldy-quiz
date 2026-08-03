@@ -360,8 +360,8 @@ export function HostPanel() {
     return (
       <div className="min-h-screen bg-background">
         {header}
-        <main className="flex min-h-[calc(100vh-3.25rem)] px-10 py-8">
-          <div className="flex flex-1 flex-col items-center">
+        <main className="relative flex min-h-[calc(100vh-3.25rem)] flex-col items-center px-10 py-8">
+          <div className="flex w-full flex-1 flex-col items-center">
             <div className="relative mb-8 w-full max-w-[450px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
               <button
                 onClick={copyCode}
@@ -419,7 +419,7 @@ export function HostPanel() {
               </p>
             )}
           </div>
-          <div className="flex w-[250px] shrink-0 flex-col items-center justify-center gap-12">
+          <div className="absolute right-10 top-1/2 flex w-[250px] -translate-y-1/2 flex-col items-center justify-center gap-12">
             <button
               onClick={() => void startGame()}
               disabled={participants.length === 0 || questions.length === 0}

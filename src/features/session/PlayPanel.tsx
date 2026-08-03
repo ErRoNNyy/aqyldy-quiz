@@ -250,8 +250,8 @@ export function PlayPanel() {
     return (
       <div className="min-h-screen bg-background">
         {headerBar}
-        <main className="flex min-h-[calc(100vh-3.25rem)] px-5 py-8">
-          <div className="flex flex-1 flex-col items-center">
+        <main className="relative flex min-h-[calc(100vh-3.25rem)] flex-col items-center px-5 py-8">
+          <div className="flex w-full flex-1 flex-col items-center">
             <div className="relative mb-8 w-full max-w-[400px] rounded-xl bg-[#efefef] px-8 py-7 text-center shadow-md">
               <p className="text-[28px] leading-none text-black">Game CODE</p>
               <p className="mt-4 text-[70px] font-normal leading-none text-black">
@@ -303,7 +303,7 @@ export function PlayPanel() {
               </p>
             )}
           </div>
-          <div className="flex w-[250px] shrink-0 flex-col items-center justify-center gap-12">
+          <div className="absolute right-10 top-1/2 flex w-[250px] -translate-y-1/2 flex-col items-center justify-center gap-12">
             <div className="text-center">
               <p className="text-[24px] font-bold text-sm text-white">Participants</p>
               <p className="text-[44px] font-bold text-sm leading-none text-white">
@@ -616,18 +616,18 @@ export function PlayPanel() {
         <main className="mx-auto flex w-full max-w-[1400px] flex-col items-center px-0 pt-4">
 
           <div className="mb-8 w-full max-w-[1070px] rounded-[12px] bg-[#f2f2f2] py-5 text-center shadow-md">
-            <h2 className="text-[30px] font-medium text-[#1f1f1f]">Quiz Complete</h2>
+            <h2 className="text-[22px] font-medium text-[#1f1f1f]">Quiz Complete</h2>
           </div>
 
           <div className="mb-6 rounded-[12px] bg-[#f2f2f2] px-10 py-4 text-center shadow-md">
-            <p className="text-[28px] font-medium text-[#1f1f1f]">
+            <p className="text-[18px] font-medium text-[#1f1f1f]">
               {winner ? `${winner.nickname} wins with ${winner.score} points!` : "Final results"}
             </p>
           </div>
 
           {me && myRank && (
             <div className="mb-8 rounded-[12px] bg-[#f2f2f2] px-14 py-3 text-center shadow-md">
-              <p className="text-[24px] font-medium text-[#1f1f1f]">
+              <p className="text-[18px] font-medium text-[#1f1f1f]">
                 You&apos;re in {myRank === 1 ? "1st" : myRank === 2 ? "2nd" : myRank === 3 ? "3rd" : `${myRank}th`} place with {me.score} points!
               </p>
             </div>
