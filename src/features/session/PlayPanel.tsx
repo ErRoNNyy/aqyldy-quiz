@@ -328,7 +328,7 @@ export function PlayPanel() {
       <div className="flex min-h-screen flex-col bg-background">
         {headerBar}
         <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6">
-          <span className="rounded-full bg-orange-500 px-6 py-2 text-lg font-bold text-white">
+          <span className="w-full py-2 text-center text-2xl font-bold text-white">
             Get Ready!
           </span>
           <div className="w-full max-w-2xl rounded-2xl bg-white px-8 py-6 text-center shadow-xl">
