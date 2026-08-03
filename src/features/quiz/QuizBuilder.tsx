@@ -843,13 +843,13 @@ export function QuizBuilder() {
           </div>
 
           {/* Answer grid */}
-          <div className="grid w-full max-w-5xl h-full grid-cols-2 gap-4">
+          <div className="grid w-full max-w-5xl grid-cols-2 gap-4">
             {draftAnswers.map((ans, i) => {
               const color = ANSWER_COLORS[i];
               return (
                 <div
                   key={i}
-                  className="flex items-center overflow-hidden rounded-lg border border-zinc-200 bg-white"
+                  className="flex h-24 items-center overflow-hidden rounded-lg border border-zinc-200 bg-white"
                 >
                   {i % 2 === 0 && (
                     <button
