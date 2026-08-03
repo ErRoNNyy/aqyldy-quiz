@@ -849,7 +849,7 @@ export function QuizBuilder() {
               return (
                 <div
                   key={i}
-                  className="flex h-24 items-center overflow-hidden rounded-lg border border-zinc-200 bg-white"
+                  className="flex h-16 items-center overflow-hidden rounded-lg border border-zinc-200 bg-white"
                 >
                   {i % 2 === 0 && (
                     <button
